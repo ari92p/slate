@@ -1,0 +1,17 @@
+Third-party domain data distributed as unmodified source text.
+
+HaGeZi DNS Blocklists
+https://github.com/hagezi/dns-blocklists
+Source: wildcard/nsfw-onlydomains.txt
+License: GNU GPL version 3 (see HaGeZi.txt).
+Source data, copyright and notices remain in data/hagezi.txt.
+
+The Block List Project
+https://github.com/blocklistproject/Lists
+Source: porn.txt
+The repository LICENSE states Unlicense (see BlockListProject.txt).
+The distributed porn.txt header instead states MIT. Both upstream
+notices have been preserved. Consult upstream to resolve this discrepancy
+before a public marketplace release.
+
+Retrieved 2026-10-18. Runtime updates download the same public text sources.

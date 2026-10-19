@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Slate",
+  "version": "0.4.3",
+  "minimum_chrome_version": "119",
+  "description": "Lokale Browserpflege mit anpassbarer Domainliste.",
+  "homepage_url": "https://github.com/mlemors/slate",
+  "permissions": [
+    "history",
+    "storage",
+    "alarms",
+    "contextMenus",
+    "unlimitedStorage"
+  ],
+  "optional_permissions": [
+    "cookies"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Slate"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

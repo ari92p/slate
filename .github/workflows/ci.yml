@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test
+        run: npm test
+      - name: Validate JavaScript and manifest
+        run: |
+          node --check background.js
+          node --check core.js
+          node --check options.js
+          node --check sources.js
+          node -e "JSON.parse(require('node:fs').readFileSync('manifest.json', 'utf8'))"
+          bash -n scripts/build-release-zip.sh
+      - name: Build release ZIP
+        run: npm run build
+      - name: Verify release ZIP
+        run: unzip -t "dist/slate-v$(node -p \"require('./manifest.json').version\").zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slate-extension
+          path: dist/*.zip

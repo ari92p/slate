@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slate · Einstellungen</title>
+<link rel="stylesheet" href="options.css">
+<link rel="stylesheet" href="gold.css">
+<main>
+ <header class="app-header enter-up">
+  <div class="brand-row">
+   <span class="brand-mark" aria-hidden="true"><span></span></span>
+   <span class="brand-name">Slate</span>
+   <span class="page-title">Einstellungen</span>
+   <button id="scan" class="header-action">Jetzt prüfen</button>
+  </div>
+ </header>
+
+ <div class="content-grid">
+  <div class="content-column">
+   <section class="card status-card enter-up">
+    <div class="section-heading">
+     <span class="section-number">01</span>
+     <h2>Status</h2>
+    </div>
+    <p id="status" class="status-value" role="status">Wird geprüft …</p>
+    <p class="legend"><span>🔴 Treffer</span><span>🟢 Sauber</span><span>🟠 Aktiv oder Fehler</span></p>
+   </section>
+
+   <section class="card enter-up">
+    <div class="section-heading">
+     <span class="section-number">02</span>
+     <h2>Bereinigung</h2>
+    </div>
+    <label class="toggle-row" for="deleteCookies">
+     <span><strong>Cookies ebenfalls löschen</strong><small>Optionaler Websitezugriff</small></span>
+     <input type="checkbox" id="deleteCookies">
+    </label>
+    <p>Standardmäßig ausgeschaltet. Beim Aktivieren fragt Brave einmalig nach dem erforderlichen Websitezugriff. Deaktivieren gibt diesen Zugriff wieder frei.</p>
+    <p id="cookieMessage" class="inline-message" role="status"></p>
+   </section>
+  </div>
+
+  <div class="content-column">
+   <section class="card enter-up">
+    <div class="section-heading">
+     <span class="section-number">03</span>
+     <h2>Prüfrhythmus</h2>
+    </div>
+    <label class="field-label" for="scanInterval">Automatisch prüfen</label>
+    <select id="scanInterval">
+     <option value="0">Nur beim Browserstart und manuell</option>
+     <option value="60">Stündlich</option>
+     <option value="360">Alle 6 Stunden</option>
+     <option value="1440">Täglich</option>
+    </select>
+    <p>Standardmäßig prüft Slate beim Browserstart und manuell. Regeländerungen werden weiterhin sofort geprüft.</p>
+    <p id="intervalMessage" class="inline-message" role="status"></p>
+   </section>
+
+   <section class="card enter-up">
+    <div class="section-heading">
+     <span class="section-number">04</span>
+     <h2>Quellen</h2>
+    </div>
+    <p>HaGeZi und Block List Project sind aktiv. Die Listen werden täglich aktualisiert und ausschließlich lokal ausgewertet.</p>
+    <p id="sourcesStatus" class="source-status" role="status">Quellen werden geladen …</p>
+    <button id="refresh" class="secondary">Quellen aktualisieren</button>
+    <p id="refreshMessage" class="inline-message" role="status"></p>
+   </section>
+  </div>
+ </div>
+
+ <div class="list-grid">
+  <section class="card list-card"><details><summary><span><small>Eigene Regeln</small>Blacklist</span><span class="summary-icon" aria-hidden="true">+</span></summary>
+   <div class="details-content">
+    <p>Zusätzliche Domains, die bereinigt werden sollen. Eine Domain pro Zeile, einschließlich Unterdomains.</p>
+    <textarea id="blacklist" spellcheck="false" aria-label="Blacklist"></textarea>
+    <button id="saveBlacklist">Blacklist speichern</button>
+    <p id="blacklistMessage" class="inline-message" role="status"></p>
+   </div>
+  </details></section>
+  <section class="card list-card"><details><summary><span><small>Ausnahmen</small>Whitelist</span><span class="summary-icon" aria-hidden="true">+</span></summary>
+   <div class="details-content">
+    <p>Diese Domains und ihre Unterdomains bleiben erhalten. Die Whitelist hat Vorrang vor beiden Quellen und der Blacklist. Gemeinsam genutzte übergeordnete Cookies bleiben zum Schutz freigegebener Unterdomains ebenfalls erhalten.</p>
+    <textarea id="whitelist" spellcheck="false" aria-label="Whitelist"></textarea>
+    <button id="saveWhitelist">Whitelist speichern</button>
+    <p id="whitelistMessage" class="inline-message" role="status"></p>
+   </div>
+  </details></section>
+ </div>
+
+ <section class="info-panel">
+  <div>
+   <span class="label">TRANSPARENT &amp; LOKAL</span>
+   <h2>Was wird bereinigt?</h2>
+  </div>
+  <div class="info-copy">
+   <p>Der gesamte verfügbare Verlauf des aktuellen Browserprofils wird nach diesen Domains durchsucht. Entfernt werden alle Besuche passender URLs. Nur bei aktivierter Cookie-Option werden zusätzlich passende Domain-Cookies entfernt, auch ohne Verlaufseintrag.</p>
+   <p>Die Quellenlisten sind nicht vollständig und können Fehlzuordnungen enthalten. Gemischte Plattformen wie Reddit werden bewusst nicht pauschal gelöscht. Unbekannte Domains, Suchanfragen, Drittanbieter-Tracker, Cache, andere Website-Daten, Downloads und offene Tabs werden nicht bereinigt. Offene Seiten können Cookies erneut setzen. „Grün“ bedeutet keine Listentreffer, keine garantierte Spurenfreiheit.</p>
+   <p>Nur die öffentlichen Listen werden von GitHub heruntergeladen; dabei erhält GitHub deine IP-Adresse. Keine Analyse-Dienste und keine Übertragung deines Verlaufs oder deiner Cookies. Beim optionalen Cookie-Löschen kannst du auf betroffenen Seiten abgemeldet werden. Die Löschung ist nicht rückgängig zu machen.</p>
+  </div>
+ </section>
+</main>
+<script type="module" src="options.js"></script>
+</html>
