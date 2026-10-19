@@ -315,7 +315,8 @@ input[type="checkbox"]:checked::after { transform: translateX(20px); background:
 
 .list-grid { margin-top: 18px; }
 section.list-card { padding: 0; overflow: hidden; }
-.list-card:hover { transform: none; }
+.list-card:first-child { animation-delay: 220ms; }
+.list-card:last-child { animation-delay: 260ms; }
 
 details { width: 100%; }
 
