@@ -32,7 +32,9 @@ jobs:
       - name: Build release ZIP
         run: npm run build
       - name: Verify release ZIP
-        run: unzip -t "dist/slate-v$(node -p \"require('./manifest.json').version\").zip"
+        run: |
+          version="$(node -p "require('./manifest.json').version")"
+          unzip -t "dist/slate-v${version}.zip"
       - uses: actions/upload-artifact@v4
         with:
           name: slate-extension
