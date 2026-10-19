@@ -23,7 +23,13 @@
      <h2>Status</h2>
     </div>
     <p id="status" class="status-value" role="status">Wird geprüft …</p>
-    <p class="legend"><span>🔴 Treffer</span><span>🟢 Sauber</span><span>🟠 Aktiv oder Fehler</span></p>
+    <div class="status-key" aria-label="Bedeutung der Symbolfarben">
+     <span class="status-key-label">Symbolstatus</span>
+     <span>🔴 Treffer gefunden</span>
+     <span>🟢 Keine Listentreffer</span>
+     <span>🟠 Prüfung läuft oder Fehler</span>
+    </div>
+    <button id="clean" hidden>Jetzt bereinigen</button>
    </section>
 
    <section class="card enter-up">
