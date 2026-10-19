@@ -5,7 +5,7 @@
   </a>
 </h1>
 
-Slate is a discreet browser extension for Chromium-based browsers. It checks the current browser profile against curated domain lists and removes matching history entries with one click. Matching cookies can be removed optionally.
+Slate is a discreet browser extension for Chromium-based browsers. It checks the current browser profile against curated domain lists and removes matching history entries with one click. Matching cookies can be removed optionally. The settings interface follows the browser language in English or German and supports light and dark appearance.
 
 ![Slate settings](assets/preview.png)
 
@@ -13,12 +13,14 @@ Slate is a discreet browser extension for Chromium-based browsers. It checks the
 
 - One-click cleanup from the extension icon
 - Individually switchable lists from HaGeZi and Block List Project
+- Visible source links, removal and restoration of bundled lists
 - Custom HTTPS filter lists with their own update status
 - Custom blacklist and prioritized whitelist
 - Optional cookie cleanup with optional permissions
 - Manual, hourly, six-hourly or daily checks
 - Local processing without analytics
 - Badge counts affected domains, not individual URLs or cookies
+- Localized English and German interface with Chrome/Brave i18n fallback
 
 ## Installation from a GitHub release
 
@@ -36,7 +38,7 @@ Clone this repository, open the browser's extension page, enable Developer mode 
 
 ## Usage
 
-Click the Slate icon to clean matching history entries. Open the icon's context menu and choose **Slate: Einstellungen und Status** to manage scans, sources, cookie cleanup, blacklist and whitelist.
+Click the Slate icon to clean matching history entries. Open the icon's context menu and choose **Slate: Settings and status** (German: **Slate: Einstellungen und Status**) to manage scans, blocklists, cookie cleanup, blacklist and whitelist.
 
 Cookie cleanup is disabled by default. Enabling it triggers the browser's permission prompt and may sign you out of matching sites.
 

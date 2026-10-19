@@ -16,14 +16,18 @@ FILES=(
   background.js
   core.js
   options.html
+  theme.js
+  i18n.js
   options.css
   gold.css
   options.js
   sources.js
+  _locales
   data
   licenses
   LICENSE
   PRIVACY.md
+  README.md
 )
 
 mkdir -p "$DIST_DIR"

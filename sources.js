@@ -9,7 +9,8 @@ export function sourceOrigin(value) {
  return `${url.origin}/*`;
 }
 
-export function sourceDefinitions(customSources=[]) {
+export function sourceDefinitions(customSources=[],removedBuiltInSources=[]) {
+ const removed=new Set(removedBuiltInSources);
  const valid=customSources.filter(src=>{
   try {
    return typeof src?.id==='string'&&src.id.startsWith('custom-')&&typeof src.name==='string'&&src.name.trim()&&sourceOrigin(src.url);
@@ -17,7 +18,7 @@ export function sourceDefinitions(customSources=[]) {
    return false;
   }
  }).map(src=>({id:src.id,name:src.name.trim(),url:src.url,bundledCount:0,builtIn:false,minimumCount:1}));
- return [...sources,...valid];
+ return [...sources.filter(source=>!removed.has(source.id)),...valid];
 }
 
 export function parseList(text,{minimumCount=1000}={}) {
@@ -57,7 +58,7 @@ export async function refreshSources(api,fetcher=fetch,baselines={},definitions=
    validateChange(domains,old?.domains??baselines[src.id]);
    next[src.id]={domains,updatedAt:Date.now(),checkedAt:Date.now(),error:null};
   } catch {
-   next[src.id]={...old,checkedAt:Date.now(),error:'Update fehlgeschlagen; bisherige Liste bleibt aktiv.'};
+   next[src.id]={...old,checkedAt:Date.now(),error:'sourceUpdateError'};
   }
  }
  const sourceMeta=Object.fromEntries(definitions.map(src=>{

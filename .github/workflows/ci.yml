@@ -24,6 +24,8 @@ jobs:
           node --check background.js
           node --check core.js
           node --check options.js
+          node --check theme.js
+          node --check i18n.js
           node --check sources.js
           node -e "JSON.parse(require('node:fs').readFileSync('manifest.json', 'utf8'))"
           bash -n scripts/build-release-zip.sh

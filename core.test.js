@@ -70,6 +70,12 @@ test('Custom filter lists require HTTPS and may contain a small valid set',async
  assert.deepEqual(saved.sourceData['custom-test'].domains,['example.org','sub.example.net']);
  assert.equal(saved.sourceMeta['custom-test'].enabled,true);
 });
+test('Removed built-in filter lists stay hidden while custom lists remain',()=>{
+ const definitions=sourceDefinitions([{id:'custom-test',name:'My filters',url:'https://filters.example.org/list.txt'}],['hagezi']);
+ assert(!definitions.some(source=>source.id==='hagezi'));
+ assert(definitions.some(source=>source.id==='blocklistproject'));
+ assert(definitions.some(source=>source.id==='custom-test'));
+});
 test('Disabled filter lists are retained without being downloaded',async()=>{
  const custom={id:'custom-off',name:'Off',url:'https://filters.example.org/list.txt',bundledCount:0,builtIn:false,minimumCount:1};
  let fetches=0,saved;
@@ -92,4 +98,13 @@ test('Cookie option off preserves cookies and excludes cookie-only findings',asy
  await erase(api,found);assert.equal(reads,0);assert.equal(removals,0);
  const enabled=await inspect(api,['example.org'],[],true);
  assert.equal(reads,1);assert.equal(enabled.cookies.length,1);
+});
+test('English and German locale catalogs have identical message keys',async()=>{
+ const [english,german]=await Promise.all([
+  readFile(new URL('./_locales/en/messages.json',import.meta.url),'utf8').then(JSON.parse),
+  readFile(new URL('./_locales/de/messages.json',import.meta.url),'utf8').then(JSON.parse)
+ ]);
+ assert.deepEqual(Object.keys(german).sort(),Object.keys(english).sort());
+ for(const [key,value] of Object.entries(english))assert(value.message,`English message missing: ${key}`);
+ for(const [key,value] of Object.entries(german))assert(value.message,`German message missing: ${key}`);
 });

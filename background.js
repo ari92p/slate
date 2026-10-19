@@ -1,5 +1,6 @@
 import {defaults,inspect,erase,countDomains} from './core.js';
 import {sources,sourceDefinitions,parseList,refreshSources} from './sources.js';
+import {message as t} from './i18n.js';
 const DEFAULT_SCAN_INTERVAL_MINUTES=0;
 let queue=Promise.resolve(), queuedScan, sourceCache, compiledRules;
 
@@ -13,10 +14,10 @@ async function bundledSources() {
 
 async function rules() {
  if(compiledRules)return compiledRules;
- const data=await chrome.storage.local.get(['blacklist','whitelist','domains','sourceData','deleteCookies','customSources','sourceSettings']);
+ const data=await chrome.storage.local.get(['blacklist','whitelist','domains','sourceData','deleteCookies','customSources','sourceSettings','removedBuiltInSources']);
  const bundled=await bundledSources();
  const blocked=new Set(data.blacklist??data.domains??defaults);
- for(const src of sourceDefinitions(data.customSources)) {
+ for(const src of sourceDefinitions(data.customSources,data.removedBuiltInSources)) {
   if(data.sourceSettings?.[src.id]?.enabled===false)continue;
   for(const d of data.sourceData?.[src.id]?.domains??bundled[src.id]??[])blocked.add(d);
  }
@@ -29,8 +30,8 @@ function invalidateRules(){compiledRules=undefined}
 
 let updating;
 function refresh() {
- if(!updating)updating=Promise.all([bundledSources(),chrome.storage.local.get(['customSources','sourceSettings'])])
-  .then(([bundled,data])=>refreshSources(chrome,fetch,bundled,sourceDefinitions(data.customSources),data.sourceSettings??{}))
+ if(!updating)updating=Promise.all([bundledSources(),chrome.storage.local.get(['customSources','sourceSettings','removedBuiltInSources'])])
+  .then(([bundled,data])=>refreshSources(chrome,fetch,bundled,sourceDefinitions(data.customSources,data.removedBuiltInSources),data.sourceSettings??{}))
   .then(()=>{invalidateRules();return schedule()})
   .finally(()=>{updating=null});
  return updating;
@@ -48,8 +49,8 @@ async function setup() {
  const {blacklist,domains}=await chrome.storage.local.get(['blacklist','domains']);
  if(blacklist===undefined)await chrome.storage.local.set({blacklist:domains??defaults});
  await schedule();
- const {sourceMeta={},customSources=[],sourceSettings={}}=await chrome.storage.local.get(['sourceMeta','customSources','sourceSettings']);
- if(sourceDefinitions(customSources).some(s=>sourceSettings[s.id]?.enabled!==false&&(!sourceMeta[s.id]?.updatedAt || Date.now()-sourceMeta[s.id].updatedAt>86400000)))void refresh();
+ const {sourceMeta={},customSources=[],sourceSettings={},removedBuiltInSources=[]}=await chrome.storage.local.get(['sourceMeta','customSources','sourceSettings','removedBuiltInSources']);
+ if(sourceDefinitions(customSources,removedBuiltInSources).some(s=>sourceSettings[s.id]?.enabled!==false&&(!sourceMeta[s.id]?.updatedAt || Date.now()-sourceMeta[s.id].updatedAt>86400000)))void refresh();
 }
 function schedule(clean=false) {
  if(!clean&&queuedScan)return queuedScan;
@@ -70,7 +71,7 @@ async function update(clean) {
  try {
   if(clean) {
    await chrome.action.setBadgeText({text:''});
-   await chrome.action.setTitle({title:'Slate: Bereinigung läuft …'});
+   await chrome.action.setTitle({title:t('actionCleaning')});
   }
   await icon('#a16207');
   const {blocked,whitelist,deleteCookies}=await rules();
@@ -81,18 +82,18 @@ async function update(clean) {
   await icon(failed?'#a16207':count?'#dc2626':'#15803d');
   await chrome.action.setBadgeBackgroundColor({color:failed?'#a16207':count?'#dc2626':'#15803d'});
   await chrome.action.setBadgeText({text:failed?'!':count?(count>999?'999+':String(count)):''});
-  const title=failed?'Slate: Aktion erforderlich':count?'Slate: Wartung verfügbar':'Slate: Aktuell';
+  const title=failed?t('actionRequired'):count?t('actionAvailable'):t('actionCurrent');
   await chrome.action.setTitle({title});
   await chrome.storage.local.set({status:{domains:count,history:found.history.length,cookies:found.cookies.length,failed,checkedAt:Date.now(),...(result?{lastClean:result}:{})}});
  } catch(e) {
   await icon('#a16207');await chrome.action.setBadgeText({text:'!'});
-  await chrome.action.setTitle({title:'Slate: Einstellungen öffnen'});
-  await chrome.storage.local.set({status:{error:'Prüfung fehlgeschlagen. Berechtigungen prüfen.',checkedAt:Date.now()}});
+  await chrome.action.setTitle({title:t('actionOpenSettings')});
+  await chrome.storage.local.set({status:{error:t('scanPermissionError'),checkedAt:Date.now()}});
  }
 }
 chrome.action.onClicked.addListener(()=>{void schedule(true)});
 chrome.runtime.onInstalled.addListener(()=>{
- chrome.contextMenus.removeAll(()=>chrome.contextMenus.create({id:'settings',title:'Slate: Einstellungen und Status',contexts:['action']}));
+ chrome.contextMenus.removeAll(()=>chrome.contextMenus.create({id:'settings',title:t('contextSettings'),contexts:['action']}));
  void setup();
 });
 chrome.runtime.onStartup.addListener(()=>{void setup()});
@@ -104,7 +105,7 @@ chrome.alarms.onAlarm.addListener(alarm=>{
 chrome.storage.onChanged.addListener((changes,area)=>{
  if(area!=='local')return;
  if(changes.scanIntervalMinutes)void configureScanAlarm();
- if(changes.domains||changes.blacklist||changes.whitelist||changes.deleteCookies||changes.sourceSettings||changes.customSources){invalidateRules();void schedule()}
+ if(changes.domains||changes.blacklist||changes.whitelist||changes.deleteCookies||changes.sourceSettings||changes.customSources||changes.removedBuiltInSources){invalidateRules();void schedule()}
 });
 chrome.permissions.onRemoved.addListener(permissions=>{
  if(permissions.permissions?.includes('cookies')||permissions.origins?.some(origin=>origin==='http://*/*'||origin==='https://*/*')){
