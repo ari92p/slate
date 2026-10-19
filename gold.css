@@ -130,6 +130,11 @@ main {
 
 .content-column > .card { height: 100%; }
 
+.content-grid:has(.source-add-details[open]) .content-column {
+  align-content: start;
+  grid-template-rows: auto auto;
+}
+
 section.card {
   margin: 0;
   padding: 26px;
@@ -237,6 +242,8 @@ button.secondary:hover:not(:disabled) { background: rgba(169, 237, 189, 0.08); }
 }
 
 select,
+input[type="text"],
+input[type="url"],
 textarea {
   width: 100%;
   border: 1px solid var(--border-strong);
@@ -251,6 +258,13 @@ select {
   min-height: 46px;
   margin: 0;
   padding: 0 42px 0 13px;
+  font: 500 14px/1.3 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+input[type="text"],
+input[type="url"] {
+  min-height: 44px;
+  padding: 0 13px;
   font: 500 14px/1.3 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -272,6 +286,8 @@ input:focus-visible {
 }
 
 select:focus,
+input[type="text"]:focus,
+input[type="url"]:focus,
 textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(169, 237, 189, 0.09); }
 
 .toggle-row {
@@ -319,14 +335,68 @@ input[type="checkbox"]::after {
 input[type="checkbox"]:checked { border-color: var(--accent); background: var(--accent); }
 input[type="checkbox"]:checked::after { transform: translateX(20px); background: var(--accent-ink); }
 
-.source-status {
-  padding: 11px 13px;
-  border-left: 2px solid rgba(169, 237, 189, 0.4);
-  background: rgba(169, 237, 189, 0.035);
-  color: var(--subtle);
-  font-size: 12px;
-  overflow-wrap: anywhere;
+.source-list {
+  display: grid;
+  gap: 8px;
+  max-height: 150px;
+  margin-top: 18px;
+  overflow-y: auto;
+  scrollbar-color: var(--border-strong) transparent;
 }
+
+.source-row {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.source-copy { display: grid; min-width: 0; gap: 2px; }
+.source-copy strong { color: var(--text); font-size: 13px; }
+.source-copy small { color: var(--subtle); font-size: 11px; overflow-wrap: anywhere; }
+.source-controls { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; }
+.source-toggle { display: flex; align-items: center; cursor: pointer; }
+
+button.remove-source {
+  min-height: 34px;
+  margin: 0;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  box-shadow: none;
+}
+
+button.remove-source:hover:not(:disabled) { border-color: rgba(255, 143, 134, 0.45); background: rgba(255, 143, 134, 0.07); color: var(--danger); box-shadow: none; }
+
+.compact-button { margin-top: 14px; }
+
+.source-add-details {
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.source-add-details > summary {
+  min-height: 54px;
+  padding: 14px 0 0;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.source-add-details .summary-icon { width: 30px; height: 30px; font-size: 20px; }
+.add-source-form { padding-top: 14px; }
+
+.source-fields { display: grid; grid-template-columns: minmax(130px, 0.7fr) minmax(220px, 1.3fr); gap: 10px; }
+.source-fields label { display: grid; gap: 6px; }
+.source-fields label > span { color: var(--subtle); font-size: 11px; }
+.add-source-form button { margin-top: 12px; }
 
 .inline-message { min-height: 1.55em; color: var(--accent); font-size: 13px; }
 
@@ -415,6 +485,7 @@ details[open] .summary-icon { transform: rotate(45deg); background: rgba(169, 23
   .info-panel > div:first-child { margin-bottom: 24px; }
   .info-copy { grid-template-columns: 1fr; gap: 18px; }
   .info-copy p:last-child { grid-column: auto; }
+  .source-fields { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 420px) {
@@ -422,6 +493,8 @@ details[open] .summary-icon { transform: rotate(45deg); background: rgba(169, 23
   .page-title { margin-left: 3px; padding-left: 12px; font-size: 12px; }
   .status-key { grid-template-columns: 1fr; }
   .status-key-label { grid-column: auto; }
+  .source-row { align-items: start; }
+  .source-controls { align-items: end; flex-direction: column-reverse; }
   summary { padding: 20px 21px; }
   .details-content { padding: 0 21px 21px; }
 }

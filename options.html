@@ -63,15 +63,26 @@
     <p id="intervalMessage" class="inline-message" role="status"></p>
    </section>
 
-   <section class="card enter-up">
+   <section class="card blocklists-card enter-up">
     <div class="section-heading">
      <span class="section-number">04</span>
-     <h2>Quellen</h2>
+     <h2>Blocklisten</h2>
     </div>
-    <p>HaGeZi und Block List Project sind aktiv. Die Listen werden täglich aktualisiert und ausschließlich lokal ausgewertet.</p>
-    <p id="sourcesStatus" class="source-status" role="status">Quellen werden geladen …</p>
-    <button id="refresh" class="secondary">Quellen aktualisieren</button>
+    <p>Listen einzeln aktivieren, aktualisieren oder durch eine eigene HTTPS-Liste ergänzen.</p>
+    <div id="sourceList" class="source-list" aria-live="polite"></div>
+    <button id="refresh" class="secondary compact-button">Alle aktualisieren</button>
     <p id="refreshMessage" class="inline-message" role="status"></p>
+    <details class="source-add-details">
+     <summary><span>Filterliste hinzufügen</span><span class="summary-icon" aria-hidden="true">+</span></summary>
+     <form id="addSourceForm" class="add-source-form">
+      <div class="source-fields">
+       <label><span>Name</span><input id="sourceName" type="text" maxlength="60" placeholder="Meine Liste" required></label>
+       <label><span>HTTPS-Adresse</span><input id="sourceUrl" type="url" inputmode="url" placeholder="https://example.org/list.txt" required></label>
+      </div>
+      <button id="addSource" type="submit">Liste hinzufügen</button>
+     </form>
+    </details>
+    <p id="sourceMessage" class="inline-message" role="status"></p>
    </section>
   </div>
  </div>
@@ -102,8 +113,8 @@
   </div>
   <div class="info-copy">
    <p>Der gesamte verfügbare Verlauf des aktuellen Browserprofils wird nach diesen Domains durchsucht. Entfernt werden alle Besuche passender URLs. Nur bei aktivierter Cookie-Option werden zusätzlich passende Domain-Cookies entfernt, auch ohne Verlaufseintrag.</p>
-   <p>Die Quellenlisten sind nicht vollständig und können Fehlzuordnungen enthalten. Gemischte Plattformen wie Reddit werden bewusst nicht pauschal gelöscht. Unbekannte Domains, Suchanfragen, Drittanbieter-Tracker, Cache, andere Website-Daten, Downloads und offene Tabs werden nicht bereinigt. Offene Seiten können Cookies erneut setzen. „Grün“ bedeutet keine Listentreffer, keine garantierte Spurenfreiheit.</p>
-   <p>Nur die öffentlichen Listen werden von GitHub heruntergeladen; dabei erhält GitHub deine IP-Adresse. Keine Analyse-Dienste und keine Übertragung deines Verlaufs oder deiner Cookies. Beim optionalen Cookie-Löschen kannst du auf betroffenen Seiten abgemeldet werden. Die Löschung ist nicht rückgängig zu machen.</p>
+   <p>Blocklisten sind nicht vollständig und können Fehlzuordnungen enthalten. Gemischte Plattformen wie Reddit werden bewusst nicht pauschal gelöscht. Unbekannte Domains, Suchanfragen, Drittanbieter-Tracker, Cache, andere Website-Daten, Downloads und offene Tabs werden nicht bereinigt. Offene Seiten können Cookies erneut setzen. „Grün“ bedeutet keine Listentreffer, keine garantierte Spurenfreiheit.</p>
+   <p>Öffentliche und selbst hinzugefügte Listen werden von ihrer jeweiligen Adresse heruntergeladen; deren Betreiber erhalten dabei deine IP-Adresse. Verlauf, Cookies und eigene Regeln werden nicht übertragen. Beim optionalen Cookie-Löschen kannst du auf betroffenen Seiten abgemeldet werden. Die Löschung ist nicht rückgängig zu machen.</p>
   </div>
  </section>
 </main>

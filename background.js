@@ -1,5 +1,5 @@
 import {defaults,inspect,erase,countDomains} from './core.js';
-import {sources,parseList,refreshSources} from './sources.js';
+import {sources,sourceDefinitions,parseList,refreshSources} from './sources.js';
 const DEFAULT_SCAN_INTERVAL_MINUTES=0;
 let queue=Promise.resolve(), queuedScan, sourceCache, compiledRules;
 
@@ -13,10 +13,13 @@ async function bundledSources() {
 
 async function rules() {
  if(compiledRules)return compiledRules;
- const data=await chrome.storage.local.get(['blacklist','whitelist','domains','sourceData','deleteCookies']);
+ const data=await chrome.storage.local.get(['blacklist','whitelist','domains','sourceData','deleteCookies','customSources','sourceSettings']);
  const bundled=await bundledSources();
  const blocked=new Set(data.blacklist??data.domains??defaults);
- for(const src of sources) for(const d of data.sourceData?.[src.id]?.domains??bundled[src.id])blocked.add(d);
+ for(const src of sourceDefinitions(data.customSources)) {
+  if(data.sourceSettings?.[src.id]?.enabled===false)continue;
+  for(const d of data.sourceData?.[src.id]?.domains??bundled[src.id]??[])blocked.add(d);
+ }
  const cookiePermission=data.deleteCookies===true&&await chrome.permissions.contains({permissions:['cookies'],origins:['http://*/*','https://*/*']});
  compiledRules={blocked,whitelist:data.whitelist??[],deleteCookies:cookiePermission};
  return compiledRules;
@@ -26,8 +29,8 @@ function invalidateRules(){compiledRules=undefined}
 
 let updating;
 function refresh() {
- if(!updating)updating=bundledSources()
-  .then(bundled=>refreshSources(chrome,fetch,bundled))
+ if(!updating)updating=Promise.all([bundledSources(),chrome.storage.local.get(['customSources','sourceSettings'])])
+  .then(([bundled,data])=>refreshSources(chrome,fetch,bundled,sourceDefinitions(data.customSources),data.sourceSettings??{}))
   .then(()=>{invalidateRules();return schedule()})
   .finally(()=>{updating=null});
  return updating;
@@ -45,8 +48,8 @@ async function setup() {
  const {blacklist,domains}=await chrome.storage.local.get(['blacklist','domains']);
  if(blacklist===undefined)await chrome.storage.local.set({blacklist:domains??defaults});
  await schedule();
- const {sourceMeta={}}=await chrome.storage.local.get('sourceMeta');
- if(sources.some(s=>!sourceMeta[s.id]?.updatedAt || Date.now()-sourceMeta[s.id].updatedAt>86400000))void refresh();
+ const {sourceMeta={},customSources=[],sourceSettings={}}=await chrome.storage.local.get(['sourceMeta','customSources','sourceSettings']);
+ if(sourceDefinitions(customSources).some(s=>sourceSettings[s.id]?.enabled!==false&&(!sourceMeta[s.id]?.updatedAt || Date.now()-sourceMeta[s.id].updatedAt>86400000)))void refresh();
 }
 function schedule(clean=false) {
  if(!clean&&queuedScan)return queuedScan;
@@ -101,10 +104,10 @@ chrome.alarms.onAlarm.addListener(alarm=>{
 chrome.storage.onChanged.addListener((changes,area)=>{
  if(area!=='local')return;
  if(changes.scanIntervalMinutes)void configureScanAlarm();
- if(changes.domains||changes.blacklist||changes.whitelist||changes.deleteCookies){invalidateRules();void schedule()}
+ if(changes.domains||changes.blacklist||changes.whitelist||changes.deleteCookies||changes.sourceSettings||changes.customSources){invalidateRules();void schedule()}
 });
 chrome.permissions.onRemoved.addListener(permissions=>{
- if(permissions.permissions?.includes('cookies')||permissions.origins?.length){
+ if(permissions.permissions?.includes('cookies')||permissions.origins?.some(origin=>origin==='http://*/*'||origin==='https://*/*')){
   invalidateRules();
   void chrome.storage.local.set({deleteCookies:false});
  }

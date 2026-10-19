@@ -27,7 +27,7 @@ test('Removal preserves cookie scope and partition; errors remain visible',async
  assert.equal(removed.url,'https://pornhub.com/account');assert.equal(removed.storeId,'0');assert.equal(removed.partitionKey.topLevelSite,'https://example.org');
 });
 import {policy} from './core.js';
-import {parseList,refreshSources,sources} from './sources.js';
+import {parseList,refreshSources,sources,sourceDefinitions,sourceOrigin} from './sources.js';
 import {readFile} from 'node:fs/promises';
 test('Whitelist overrides blacklist and source domains including subdomains',()=>{
  const accept=policy(['example.org','blocked.test'],['safe.example.org']);
@@ -56,6 +56,27 @@ test('A same-sized but unrelated source update is rejected',async()=>{
  await refreshSources(api,async()=>({ok:true,text:async()=>Array.from({length:1001},(_,i)=>`replacement${i}.example.org`).join('\n')}),{hagezi:baseline,blocklistproject:baseline});
  assert.equal(saved.hagezi.domains,undefined);assert(saved.hagezi.error);
  assert.equal(saved.blocklistproject.domains,undefined);assert(saved.blocklistproject.error);
+});
+test('Custom filter lists require HTTPS and may contain a small valid set',async()=>{
+ assert.equal(sourceOrigin('https://filters.example.org/list.txt'),'https://filters.example.org/*');
+ assert.throws(()=>sourceOrigin('http://filters.example.org/list.txt'));
+ assert.throws(()=>sourceOrigin('https://user:secret@filters.example.org/list.txt'));
+ const definitions=sourceDefinitions([{id:'custom-test',name:'My filters',url:'https://filters.example.org/list.txt'},{id:'broken',name:'Broken',url:'https://example.org/list.txt'}]);
+ const custom=definitions.find(source=>source.id==='custom-test');
+ assert(custom);assert.equal(custom.minimumCount,1);assert(!definitions.some(source=>source.id==='broken'));
+ let saved;
+ const api={storage:{local:{get:async()=>({sourceData:{}}),set:async data=>{saved=data}}}};
+ await refreshSources(api,async()=>({ok:true,text:async()=>"example.org\nsub.example.net\n"}),{},[custom],{});
+ assert.deepEqual(saved.sourceData['custom-test'].domains,['example.org','sub.example.net']);
+ assert.equal(saved.sourceMeta['custom-test'].enabled,true);
+});
+test('Disabled filter lists are retained without being downloaded',async()=>{
+ const custom={id:'custom-off',name:'Off',url:'https://filters.example.org/list.txt',bundledCount:0,builtIn:false,minimumCount:1};
+ let fetches=0,saved;
+ const existing={domains:['example.org'],updatedAt:123,error:null};
+ const api={storage:{local:{get:async()=>({sourceData:{'custom-off':existing}}),set:async data=>{saved=data}}}};
+ await refreshSources(api,async()=>{fetches++;throw Error('must not fetch')},{},[custom],{'custom-off':{enabled:false}});
+ assert.equal(fetches,0);assert.deepEqual(saved.sourceData['custom-off'],existing);assert.equal(saved.sourceMeta['custom-off'].enabled,false);
 });
 import {countDomains} from './core.js';
 test('Badge counts domains once across URLs, cookies and subdomains',()=>{

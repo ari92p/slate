@@ -12,7 +12,8 @@ Slate is a discreet browser extension for Chromium-based browsers. It checks the
 ## Features
 
 - One-click cleanup from the extension icon
-- Curated lists from HaGeZi and Block List Project
+- Individually switchable lists from HaGeZi and Block List Project
+- Custom HTTPS filter lists with their own update status
 - Custom blacklist and prioritized whitelist
 - Optional cookie cleanup with optional permissions
 - Manual, hourly, six-hourly or daily checks
@@ -41,7 +42,7 @@ Cookie cleanup is disabled by default. Enabling it triggers the browser's permis
 
 ## Privacy and limitations
 
-History, cookies and custom rules are processed locally. Public lists are downloaded from GitHub, which receives normal connection data such as the IP address. Slate does not use analytics or transmit browser data. See [PRIVACY.md](PRIVACY.md) for details.
+History, cookies and custom rules are processed locally. Public and user-added lists are downloaded from their configured provider, which receives normal connection data such as the IP address. Slate does not use analytics or transmit browser data. See [PRIVACY.md](PRIVACY.md) for details.
 
 Public lists can contain errors and cannot cover every site. Slate does not clear cache, Local Storage, downloads, bookmarks, open tabs or other browser profiles. Deletion cannot be undone.
 

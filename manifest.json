@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Slate",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "minimum_chrome_version": "119",
   "description": "Lokale Browserpflege mit anpassbarer Domainliste.",
   "homepage_url": "https://github.com/mlemors/slate",
@@ -14,6 +14,9 @@
   ],
   "optional_permissions": [
     "cookies"
+  ],
+  "host_permissions": [
+    "https://raw.githubusercontent.com/*"
   ],
   "optional_host_permissions": [
     "http://*/*",
