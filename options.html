@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <title>Slate</title>
  <script src="theme.js"></script>
- <link rel="stylesheet" href="options.css">
+ <link rel="stylesheet" href="vendor/circular-theme-switch/style.css">
  <link rel="stylesheet" href="gold.css">
 </head>
 <body>
@@ -50,6 +50,7 @@
      <button class="rule-tab" id="tab-blacklist" role="tab" aria-selected="false" aria-controls="panel-blacklist" data-tab="blacklist" type="button" data-i18n="blacklist"></button>
      <button class="rule-tab" id="tab-whitelist" role="tab" aria-selected="false" aria-controls="panel-whitelist" data-tab="whitelist" type="button" data-i18n="whitelist"></button>
     </div>
+    <div class="rule-panels">
     <div id="panel-blocklists" class="rule-panel" role="tabpanel" aria-labelledby="tab-blocklists">
      <div id="sourceList" class="source-list"></div>
      <form id="addSourceForm" class="add-source-form">
@@ -72,6 +73,7 @@
      <p class="rule-description" data-i18n="whitelistDescription"></p>
      <textarea id="whitelist" spellcheck="false"></textarea>
      <div class="rule-footer"><button id="saveWhitelist" type="button" data-i18n="saveWhitelist"></button><p id="whitelistMessage" class="inline-message" aria-live="polite"></p></div>
+    </div>
     </div>
    </section>
   </div>

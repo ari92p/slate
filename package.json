@@ -1,10 +1,10 @@
 {
   "name": "slate-browser-extension",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test core.test.js",
+    "test": "node --test core.test.js locales.test.js",
     "build": "./scripts/build-release-zip.sh"
   },
   "engines": {

@@ -5,7 +5,7 @@
   </a>
 </h1>
 
-Slate is a discreet browser extension for Chromium-based browsers. It checks the current browser profile against curated domain lists and removes matching history entries with one click. Matching cookies can be removed optionally. The settings interface follows the browser language in English or German and supports light and dark appearance.
+Slate is a discreet browser extension for Chromium-based browsers. It checks the current browser profile against curated domain lists and removes matching history entries with one click. Matching cookies can be removed optionally. The interface follows the browser language (26 languages, English fallback) and supports light and dark appearance with a circular theme transition.
 
 ![Slate settings](assets/preview.png)
 
@@ -20,7 +20,7 @@ Slate is a discreet browser extension for Chromium-based browsers. It checks the
 - Manual, hourly, six-hourly or daily checks
 - Local processing without analytics
 - Badge counts affected domains, not individual URLs or cookies
-- Localized English and German interface with Chrome/Brave i18n fallback
+- Localized with the standard `chrome.i18n` / `_locales` format in Arabic, Chinese (Simplified and Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Polish, Portuguese (Brazil), Romanian, Russian, Spanish, Swedish, Turkish, Ukrainian and Vietnamese
 
 ## Installation from a GitHub release
 
@@ -59,9 +59,10 @@ npm run build
 
 The release ZIP is written to `dist/` and uses the version from `manifest.json`.
 
-## Third-party lists and licenses
+## Third-party lists, code and licenses
 
 - [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists), `nsfw-onlydomains.txt`, GPL-3.0
 - [Block List Project](https://github.com/blocklistproject/Lists), `porn.txt`, Unlicense; the delivered list header also mentions MIT
+- [Circular Theme Switch](https://github.com/mlemors/circular-theme-switch) v1.1.3, bundled in `vendor/`, MIT
 
-License texts and attribution are included in [`licenses/`](licenses/). Slate's original source code is licensed under the [MIT License](LICENSE).
+License texts and attribution are included in [`licenses/`](licenses/) and [`vendor/`](vendor/). Slate's original source code is licensed under the [MIT License](LICENSE).

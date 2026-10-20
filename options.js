@@ -1,6 +1,7 @@
 import {defaults,normalize} from './core.js';
 import {sourceDefinitions,sourceOrigin} from './sources.js';
 import {applyTranslations,message as t} from './i18n.js';
+import {revealTheme} from './vendor/circular-theme-switch/index.js';
 
 const $=id=>document.getElementById(id);
 const locale=chrome.i18n.getUILanguage();
@@ -38,9 +39,23 @@ function activateTab(name,{focus=false}={}){
  localStorage.setItem('slate-rule-tab',valid);
 }
 function setStatusIndicator(state){$('statusIndicator').className=`status-indicator ${state}`}
+// Panels get a fixed height measured with optional actions visible, so later state changes never resize them. Side by side they share the tallest height.
+let panelWidth=0;
+function syncPanelHeight(){
+ const workspace=document.querySelector('.workspace');const panels=[...workspace.querySelectorAll('.panel')];const width=workspace.clientWidth;
+ const previous=panels.map(panel=>width===panelWidth?parseFloat(panel.style.getPropertyValue('--panel-height'))||0:0);
+ for(const panel of panels)panel.style.removeProperty('--panel-height');
+ // Optional controls are measured visible so showing them later never grows a panel.
+ const optional=[$('clean'),$('restoreSources')].map(node=>[node,node.hidden]);for(const [node] of optional)node.hidden=false;workspace.style.alignItems='start';
+ let heights=panels.map((panel,index)=>Math.max(previous[index],Math.ceil(panel.getBoundingClientRect().height)));
+ const sideBySide=new Set(panels.map(panel=>panel.offsetTop)).size===1;if(sideBySide)heights=heights.map(()=>Math.max(...heights));
+ for(const [node,hidden] of optional)node.hidden=hidden;workspace.style.alignItems='';panelWidth=width;
+ panels.forEach((panel,index)=>panel.style.setProperty('--panel-height',`${heights[index]}px`));
+}
+new ResizeObserver(()=>{if(document.querySelector('.workspace').clientWidth!==panelWidth)syncPanelHeight()}).observe(document.querySelector('.workspace'));
 
 updateThemeButton();
-$('themeToggle').onclick=()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';localStorage.setItem('slate-theme',document.documentElement.dataset.theme);updateThemeButton()};
+$('themeToggle').onclick=event=>revealTheme(()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';localStorage.setItem('slate-theme',document.documentElement.dataset.theme);updateThemeButton()},{event});
 for(const button of document.querySelectorAll('.rule-tab'))button.onclick=()=>activateTab(button.dataset.tab);
 activateTab(localStorage.getItem('slate-rule-tab'));
 
@@ -76,7 +91,7 @@ async function status(){
  if(value?.error){$('status').textContent=value.error;setStatusIndicator('is-checking')}
  else if(value){$('status').textContent=t('statusDomains',[String(value.domains??0),String(value.failed??0),formattedDate(value.checkedAt)]);setStatusIndicator(value.failed?'is-checking':value.domains>0?'has-findings':'is-clean')}
  else{$('status').textContent=t('statusNotChecked');setStatusIndicator('is-checking')}
- $('clean').hidden=!!value?.error||!(value?.domains>0);currentCustomSources=data.customSources??[];currentSourceSettings=data.sourceSettings??{};currentSourceMeta=data.sourceMeta??{};removedBuiltInSources=data.removedBuiltInSources??[];renderSources();
+ $('clean').hidden=!!value?.error||!(value?.domains>0);currentCustomSources=data.customSources??[];currentSourceSettings=data.sourceSettings??{};currentSourceMeta=data.sourceMeta??{};removedBuiltInSources=data.removedBuiltInSources??[];renderSources();syncPanelHeight();
 }
 
 const data=await chrome.storage.local.get(['blacklist','whitelist','domains','deleteCookies','scanIntervalMinutes','customSources','removedBuiltInSources']);

@@ -3,7 +3,7 @@
   "extensionDescription":{"message":"Private Bereinigung des Browserverlaufs mit anpassbaren Domainlisten."},
   "actionTitle":{"message":"Slate"},
   "pageTitle":{"message":"Slate · Einstellungen"},
-  "browserHistoryTagline":{"message":"Cleaning up your browser history."},
+  "browserHistoryTagline":{"message":"Bereinigt deinen Browserverlauf."},
   "scanNow":{"message":"Jetzt prüfen"},
   "overviewEyebrow":{"message":"Übersicht"},
   "cleanupHeading":{"message":"Bereinigung"},

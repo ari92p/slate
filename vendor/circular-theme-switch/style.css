@@ -1,0 +1,17 @@
+/* Keep the snapshot group alive for the same duration as its circular reveal.
+   The browser default is 250ms, shorter than our default 500ms reveal. */
+html.theme-ripple-active::view-transition-group(root) {
+  animation-duration: var(--theme-ripple-duration, 500ms);
+}
+/* Scoped so unrelated view transitions retain their own animation. */
+html.theme-ripple-active::view-transition-old(root),
+html.theme-ripple-active::view-transition-new(root) {
+  animation: none !important;
+  mix-blend-mode: normal;
+}
+html.theme-ripple-active::view-transition-image-pair(root) { isolation: isolate; }
+html.theme-ripple-active::view-transition-old(root) { z-index: 1; }
+html.theme-ripple-active::view-transition-new(root) {
+  z-index: 999;
+  clip-path: circle(0 at var(--theme-ripple-x, 50%) var(--theme-ripple-y, 50%));
+}

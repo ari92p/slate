@@ -17,8 +17,8 @@ FILES=(
   core.js
   options.html
   theme.js
+  vendor
   i18n.js
-  options.css
   gold.css
   options.js
   sources.js
