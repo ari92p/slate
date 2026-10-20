@@ -19,6 +19,6 @@ Retrieved 2026-10-18. Runtime updates download the same public text sources.
 Third-party code
 
 Circular Theme Switch v1.1.3
-https://github.com/mlemors/circular-theme-switch
+https://github.com/ari92p/circular-theme-switch
 License: MIT (see vendor/circular-theme-switch/LICENSE).
 Bundled unchanged in vendor/circular-theme-switch/.

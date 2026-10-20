@@ -1,7 +1,7 @@
 <h1>
   Slate
-  <a href="https://github.com/mlemors/slate/releases/latest">
-    <img alt="Latest release" src="https://img.shields.io/github/v/release/mlemors/slate?display_name=tag&style=for-the-badge&label=Download&logo=github">
+  <a href="https://github.com/ari92p/slate/releases/latest">
+    <img alt="Latest release" src="https://img.shields.io/github/v/release/ari92p/slate?display_name=tag&style=for-the-badge&label=Download&logo=github">
   </a>
 </h1>
 
@@ -24,7 +24,7 @@ Slate is a discreet browser extension for Chromium-based browsers. It checks the
 
 ## Installation from a GitHub release
 
-1. Open the repository's [Releases](https://github.com/mlemors/slate/releases) page.
+1. Open the repository's [Releases](https://github.com/ari92p/slate/releases) page.
 2. Download and extract the latest ZIP.
 3. Open `brave://extensions` or `chrome://extensions`.
 4. Enable **Developer mode**.
@@ -63,6 +63,6 @@ The release ZIP is written to `dist/` and uses the version from `manifest.json`.
 
 - [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists), `nsfw-onlydomains.txt`, GPL-3.0
 - [Block List Project](https://github.com/blocklistproject/Lists), `porn.txt`, Unlicense; the delivered list header also mentions MIT
-- [Circular Theme Switch](https://github.com/mlemors/circular-theme-switch) v1.1.3, bundled in `vendor/`, MIT
+- [Circular Theme Switch](https://github.com/ari92p/circular-theme-switch) v1.1.3, bundled in `vendor/`, MIT
 
 License texts and attribution are included in [`licenses/`](licenses/) and [`vendor/`](vendor/). Slate's original source code is licensed under the [MIT License](LICENSE).

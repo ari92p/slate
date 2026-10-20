@@ -5,7 +5,7 @@
   "default_locale": "en",
   "minimum_chrome_version": "119",
   "description": "__MSG_extensionDescription__",
-  "homepage_url": "https://github.com/mlemors/slate",
+  "homepage_url": "https://github.com/ari92p/slate",
   "permissions": [
     "history",
     "storage",
