@@ -21,6 +21,7 @@ FILES=(
   i18n.js
   slate.css
   fonts
+  icons
   options.js
   sources.js
   _locales

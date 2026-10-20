@@ -28,6 +28,7 @@ jobs:
           node --check i18n.js
           node --check sources.js
           node -e "JSON.parse(require('node:fs').readFileSync('manifest.json', 'utf8'))"
+          node --check scripts/build-icons.mjs
           bash -n scripts/build-release-zip.sh
       - name: Build release ZIP
         run: npm run build

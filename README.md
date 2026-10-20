@@ -19,7 +19,7 @@ Slate is a discreet browser extension for Chromium-based browsers. It checks the
 - Optional cookie cleanup with optional permissions
 - Manual, hourly, six-hourly or daily checks
 - Local processing without analytics
-- Badge counts affected domains, not individual URLs or cookies
+- The toolbar icon shows the state as a small slate: chalk writing means matches, a tick means clean. No counter badge
 - Localized with the standard `chrome.i18n` / `_locales` format in Arabic, Chinese (Simplified and Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Polish, Portuguese (Brazil), Romanian, Russian, Spanish, Swedish, Turkish, Ukrainian and Vietnamese
 
 ## Installation from a GitHub release
@@ -56,6 +56,8 @@ Node.js 22 or newer is required. No package installation is needed.
 npm test
 npm run build
 ```
+
+The toolbar and extension icons in `icons/` are generated from `scripts/build-icons.mjs`. After changing the icon design, run `node scripts/build-icons.mjs` with a Chromium-based browser installed.
 
 The release ZIP is written to `dist/` and uses the version from `manifest.json`.
 

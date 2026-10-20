@@ -115,3 +115,10 @@ test('Own always-clean rules start empty and lose only the formerly prefilled do
  assert.deepEqual(migrateBlacklist({domains:['xnxx.com','legacy.example']}),['legacy.example']);
  assert.equal(migrateBlacklist({blacklist:['pornhub.com'],blacklistDefaultsRemoved:true}),null,'runs only once, re-added domains stay');
 });
+test('Every icon referenced by the manifest and the background script exists',async()=>{
+ const {readFileSync,existsSync}=await import('node:fs');
+ const manifest=JSON.parse(readFileSync(new URL('./manifest.json',import.meta.url),'utf8'));
+ const files=[...Object.values(manifest.icons),...Object.values(manifest.action.default_icon)];
+ for(const state of ['idle','working','clean','findings'])for(const px of [16,32])files.push(`icons/${state}-${px}.png`);
+ for(const file of files)assert(existsSync(new URL(`./${file}`,import.meta.url)),file);
+});

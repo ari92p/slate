@@ -61,32 +61,26 @@ function schedule(clean=false) {
  queue=tracked.catch(()=>{});
  return tracked;
 }
-async function icon(color) {
- const canvas=new OffscreenCanvas(32,32), c=canvas.getContext('2d');
- c.fillStyle=color;c.beginPath();c.arc(16,16,14,0,Math.PI*2);c.fill();
- c.strokeStyle='#fff';c.lineWidth=3;c.beginPath();c.moveTo(9,16);c.lineTo(14,21);c.lineTo(23,11);c.stroke();
- await chrome.action.setIcon({imageData:c.getImageData(0,0,32,32)});
+// The slate icon alone shows the state; there is deliberately no badge. States: idle, working, clean, findings.
+async function icon(state) {
+ await chrome.action.setIcon({path:{16:`icons/${state}-16.png`,32:`icons/${state}-32.png`}});
 }
 async function update(clean) {
  try {
-  if(clean) {
-   await chrome.action.setBadgeText({text:''});
-   await chrome.action.setTitle({title:t('actionCleaning')});
-  }
-  await icon('#a16207');
+  await chrome.action.setBadgeText({text:''});
+  if(clean)await chrome.action.setTitle({title:t('actionCleaning')});
+  await icon('working');
   const {blocked,whitelist,deleteCookies}=await rules();
   let found=await inspect(chrome,blocked,whitelist,deleteCookies), result;
   if(clean) { result=await erase(chrome,found); found=await inspect(chrome,blocked,whitelist,deleteCookies); }
   const count=countDomains(found,blocked);
   const failed=result?.failed||0;
-  await icon(failed?'#a16207':count?'#dc2626':'#15803d');
-  await chrome.action.setBadgeBackgroundColor({color:failed?'#a16207':count?'#dc2626':'#15803d'});
-  await chrome.action.setBadgeText({text:failed?'!':count?(count>999?'999+':String(count)):''});
+  await icon(failed||count?'findings':'clean');
   const title=failed?t('actionRequired'):count?t('actionAvailable'):t('actionCurrent');
   await chrome.action.setTitle({title});
   await chrome.storage.local.set({status:{domains:count,history:found.history.length,cookies:found.cookies.length,failed,checkedAt:Date.now(),...(result?{lastClean:result}:{})}});
  } catch(e) {
-  await icon('#a16207');await chrome.action.setBadgeText({text:'!'});
+  await icon('findings');
   await chrome.action.setTitle({title:t('actionOpenSettings')});
   await chrome.storage.local.set({status:{error:'scan',checkedAt:Date.now()}});
  }
