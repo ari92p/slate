@@ -24,13 +24,21 @@ export function policy(blocked, allowed=[]) {
  return host=>!matches(host,allow)&&matches(host,block);
 }
 export function matchURL(url, domains) { try { const u=new URL(url); return ['http:','https:'].includes(u.protocol) && matches(u.hostname,domains); } catch { return false; } }
-export async function inspect(api, domains, whitelist=[], includeCookies=true) {
+// pending: addresses seen through history.onVisited. history.search only lists the end of redirect chains
+// and leaves out some synced visits, so those are checked one by one and kept while they still exist.
+export async function inspect(api, domains, whitelist=[], includeCookies=true, pending=[]) {
  const accepts=policy(domains,whitelist);
  // Increase the cap until every distinct URL fits; never silently use the 24-hour default.
  let cap=10000, history;
  do { history=await api.history.search({text:'',startTime:0,maxResults:cap}); if(history.length<cap) break; if(cap>=10000000) throw Error('Verlauf zu groß für vollständige Prüfung'); cap*=10; } while(true);
  const cookies=includeCookies?await api.cookies.getAll({}):[];
- return {history:history.filter(x=>{try{const u=new URL(x.url);return ['http:','https:'].includes(u.protocol)&&accepts(u.hostname)}catch{return false}}),cookies:cookies.filter(c=>accepts(c.domain)&&!whitelist.some(d=>d.endsWith('.'+c.domain.replace(/^\./,''))))};
+ const matching=x=>{try{const u=new URL(x.url);return ['http:','https:'].includes(u.protocol)&&accepts(u.hostname)}catch{return false}};
+ const found=history.filter(matching),listed=new Set(found.map(x=>x.url));
+ for(const url of new Set(pending)) {
+  if(listed.has(url)||!matching({url}))continue;
+  try{if((await api.history.getVisits({url})).length)found.push({url})}catch{}
+ }
+ return {history:found,cookies:cookies.filter(c=>accepts(c.domain)&&!whitelist.some(d=>d.endsWith('.'+c.domain.replace(/^\./,''))))};
 }
 // Count each matched list domain once, across URLs, subdomains and cookies.
 export function countDomains(found, blocked) {

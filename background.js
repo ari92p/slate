@@ -1,4 +1,4 @@
-import {migrateBlacklist,inspect,erase,countDomains,policy,startPages,forgetShortcuts} from './core.js';
+import {migrateBlacklist,inspect,erase,countDomains,policy,matches,startPages,forgetShortcuts} from './core.js';
 import {sources,sourceDefinitions,parseList,refreshSources,mergeBuiltInDuplicates} from './sources.js';
 import {message as t} from './i18n.js';
 const DEFAULT_SCAN_INTERVAL_MINUTES=0;
@@ -80,14 +80,22 @@ async function update(clean) {
   await chrome.action.setBadgeText({text:''});
   await icon('working');
   const {blocked,whitelist,deleteCookies}=await rules();
-  let found=await inspect(chrome,blocked,whitelist,deleteCookies), result;
+  const {pendingUrls=[]}=await chrome.storage.local.get('pendingUrls');
+  let found=await inspect(chrome,blocked,whitelist,deleteCookies,pendingUrls), result;
   if(clean&&(found.history.length||found.cookies.length)) {
    await chrome.storage.session.set({activity:{type:'clean',startedAt:Date.now()}});
    await chrome.action.setTitle({title:t('actionCleaning')});
    result=await erase(chrome,found);
-   await forgetShortcuts(chrome,startPages(found,policy(blocked,whitelist)));
-   found=await inspect(chrome,blocked,whitelist,deleteCookies);
+   const pages=startPages(found,policy(blocked,whitelist));
+   for(const url of pages)ownVisits.add(url);
+   await forgetShortcuts(chrome,pages);
+   setTimeout(()=>{for(const url of pages)ownVisits.delete(url)},10000);
+   found=await inspect(chrome,blocked,whitelist,deleteCookies,pendingUrls);
   }
+  // Keep only remembered addresses that still exist; cleaned ones are forgotten.
+  const remaining=new Set(found.history.map(item=>item.url));
+  const {pendingUrls:latest=[]}=await chrome.storage.local.get('pendingUrls');
+  await chrome.storage.local.set({pendingUrls:latest.filter(url=>remaining.has(url)||!pendingUrls.includes(url))});
   const count=countDomains(found,blocked);
   const failed=result?.failed||0;
   await icon(failed||count?'findings':'clean');
@@ -102,6 +110,23 @@ async function update(clean) {
   await chrome.storage.session.remove('activity');
  }
 }
+// Every visit is reported here, including redirect sources that history.search never lists.
+// A matching visit is remembered until it is cleaned and updates the status at once.
+const MAX_PENDING_URLS=5000;
+const ownVisits=new Set(); // start pages Slate adds and deletes itself while cleaning
+let visitQueue=Promise.resolve();
+chrome.history.onVisited.addListener(item=>{
+ visitQueue=visitQueue.then(async()=>{
+  let host;
+  if(ownVisits.has(item.url))return;
+  try{const url=new URL(item.url);if(!['http:','https:'].includes(url.protocol))return;host=url.hostname}catch{return}
+  const {blocked,whitelist}=await rules();
+  if(matches(host,whitelist)||!matches(host,blocked))return;
+  const {pendingUrls=[]}=await chrome.storage.local.get('pendingUrls');
+  if(!pendingUrls.includes(item.url))await chrome.storage.local.set({pendingUrls:[...pendingUrls,item.url].slice(-MAX_PENDING_URLS)});
+  await schedule();
+ }).catch(()=>{});
+});
 chrome.action.onClicked.addListener(()=>{void schedule(true)});
 chrome.runtime.onInstalled.addListener(()=>{
  chrome.contextMenus.removeAll(()=>chrome.contextMenus.create({id:'settings',title:t('contextSettings'),contexts:['action']}));

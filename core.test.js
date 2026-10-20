@@ -133,3 +133,10 @@ test('Start pages of cleaned sites cover both schemes and www, and respect the w
  assert.deepEqual(startPages(found),['https://shooshtime.com/','http://shooshtime.com/','https://www.shooshtime.com/','http://www.shooshtime.com/','https://cams.example.org/','http://cams.example.org/','https://www.cams.example.org/','http://www.cams.example.org/']);
  assert.deepEqual(startPages(found,policy(['example.org'],['www.cams.example.org'])),['https://cams.example.org/','http://cams.example.org/']);
 });
+test('Remembered addresses that history.search does not list are found while they exist',async()=>{
+ const stored=new Set(['https://shooshtime.com/videos/1/','https://example.org/redirected']);
+ const api={history:{search:async()=>[{url:'https://example.org/age-check'}],getVisits:async({url})=>stored.has(url)?[{transition:'typed'}]:[]},cookies:{getAll:async()=>[]}};
+ const pending=['https://shooshtime.com/videos/1/','https://shooshtime.com/gone/','https://example.org/redirected','https://safe.shooshtime.com/x'];
+ const found=await inspect(api,['shooshtime.com'],['safe.shooshtime.com'],false,pending);
+ assert.deepEqual(found.history.map(item=>item.url),['https://shooshtime.com/videos/1/']);
+});
