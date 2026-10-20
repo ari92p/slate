@@ -67,14 +67,18 @@ async function icon(state) {
 }
 async function update(clean) {
  // Lets an open settings page show the running scan or cleanup, whoever started it.
- await chrome.storage.session.set({activity:{type:clean?'clean':'scan',startedAt:Date.now()}});
+ // A cleanup starts as a check and only becomes a cleanup when there is something to delete.
+ await chrome.storage.session.set({activity:{type:'scan',startedAt:Date.now()}});
  try {
   await chrome.action.setBadgeText({text:''});
-  if(clean)await chrome.action.setTitle({title:t('actionCleaning')});
   await icon('working');
   const {blocked,whitelist,deleteCookies}=await rules();
   let found=await inspect(chrome,blocked,whitelist,deleteCookies), result;
-  if(clean) { result=await erase(chrome,found); found=await inspect(chrome,blocked,whitelist,deleteCookies); }
+  if(clean&&(found.history.length||found.cookies.length)) {
+   await chrome.storage.session.set({activity:{type:'clean',startedAt:Date.now()}});
+   await chrome.action.setTitle({title:t('actionCleaning')});
+   result=await erase(chrome,found); found=await inspect(chrome,blocked,whitelist,deleteCookies);
+  }
   const count=countDomains(found,blocked);
   const failed=result?.failed||0;
   await icon(failed||count?'findings':'clean');

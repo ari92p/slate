@@ -58,7 +58,7 @@ npm run build
 
 The toolbar and extension icons in `icons/` are generated from `scripts/build-icons.mjs`. After changing the icon design, run `node scripts/build-icons.mjs` with a Chromium-based browser installed.
 
-The release ZIP is written to `dist/` and uses the version from `manifest.json`.
+`npm run build` keeps only the current build in `dist/`: the release ZIP `dist/slate-v<version>.zip` (version from `manifest.json`) and the unpacked folder `dist/slate/`. Load `dist/slate/` once with **Load unpacked**; after later builds, click the extension's reload button instead of adding it again.
 
 ## Third-party lists, code and licenses
 

@@ -37,7 +37,7 @@ function slateFor(value){
  const findings=value.domains===1?t('slateFindingsOne'):t('slateFindingsMany',[formattedCount(value.domains)]);
  if(value.failed>0)return {title:value.domains>0?findings:t('slateCleanedTitle'),text:t('slateDeleteErrorText'),error:true,action:'cleanAgain'};
  if(value.domains>0)return {title:findings,text:t('slateFindingsText',[date]),action:'cleanHistory'};
- if(value.lastClean)return {title:t('slateCleanedTitle'),text:t('slateCleanedText',[formattedCount(value.lastClean.history),date]),tick:true};
+ if(value.lastClean?.history||value.lastClean?.cookies)return {title:t('slateCleanedTitle'),text:t('slateCleanedText',[formattedCount(value.lastClean.history),date]),tick:true};
  return {title:t('slateCleanTitle'),text:t('slateCleanText',[date]),tick:true};
 }
 const working={
@@ -203,13 +203,18 @@ $('refresh').onclick=async()=>{$('refresh').disabled=true;$('listMessage').textC
 
 $('scan').onclick=scan;
 // Scans and cleanups started elsewhere (toolbar icon, schedule) appear exactly like the page's own buttons.
-let external=null;
+let external=null,externalType=null;
 async function mirrorActivity(activity){
  if(activity){
-  if(busy)return;
-  setBusy(true);
-  external=showSlate(activity.type==='clean'?working.cleaning:working.checking,{wipe:activity.type==='clean'});
+  if(busy&&!external)return; // the page's own button is already showing it
+  if(activity.type===externalType)return;
+  if(!external)setBusy(true);
+  externalType=activity.type;
+  // A check can turn into a cleanup; wipe only then, after the previous state is shown.
+  const previous=external;
+  external=(async()=>{await previous;await showSlate(activity.type==='clean'?working.cleaning:working.checking,{wipe:activity.type==='clean'})})();
  }else if(external){
+  externalType=null;
   // Let the wipe finish even when the cleanup was faster than the animation.
   const shown=external;external=null;await shown;
   setBusy(false);await status();

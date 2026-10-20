@@ -32,8 +32,16 @@ FILES=(
   README.md
 )
 
+UNPACKED_DIR="$DIST_DIR/slate"
+
+# dist/ only ever holds the current build: one ZIP and one unpacked folder.
+# The folder keeps the same path, so the browser can simply reload it after each build.
 mkdir -p "$DIST_DIR"
-rm -f "$ZIP_PATH"
+find "$DIST_DIR" -mindepth 1 -maxdepth 1 -name 'slate-v*' -exec rm -rf {} +
 cd "$REPO_ROOT"
 zip -r -X "$ZIP_PATH" "${FILES[@]}" >/dev/null
+mkdir -p "$UNPACKED_DIR"
+find "$UNPACKED_DIR" -mindepth 1 -delete
+unzip -q "$ZIP_PATH" -d "$UNPACKED_DIR"
 echo "Built: $ZIP_PATH"
+echo "Unpacked: $UNPACKED_DIR"
