@@ -1,4 +1,11 @@
-export const defaults = ['pornhub.com','xvideos.com','xnxx.com','xhamster.com','youporn.com','redtube.com','tube8.com','spankbang.com','eporner.com','hqporner.com','beeg.com','chaturbate.com','stripchat.com',' livejasmin.com'.trim(),'cam4.com','bongacams.com','myfreecams.com','rule34.xxx','rule34.paheal.net','e-hentai.org','exhentai.org','nhentai.net','hanime.tv'];
+// Domains that versions up to 0.8.0 prefilled into the own "always clean" rules. The bundled lists cover all of them.
+export const legacyDefaults = ['pornhub.com','xvideos.com','xnxx.com','xhamster.com','youporn.com','redtube.com','tube8.com','spankbang.com','eporner.com','hqporner.com','beeg.com','chaturbate.com','stripchat.com',' livejasmin.com'.trim(),'cam4.com','bongacams.com','myfreecams.com','rule34.xxx','rule34.paheal.net','e-hentai.org','exhentai.org','nhentai.net','hanime.tv'];
+// One-time migration: drop the prefilled domains from stored rules, keep everything the user added.
+export function migrateBlacklist({blacklist,domains,blacklistDefaultsRemoved}) {
+ if(blacklistDefaultsRemoved)return null;
+ const legacy=new Set(legacyDefaults);
+ return (blacklist??domains??[]).filter(domain=>!legacy.has(domain));
+}
 export function normalize(value) {
  const raw=value.trim().toLowerCase();
  if (!raw || raw.startsWith('#')) return null;

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalize,matches,matchURL,inspect,erase} from './core.js';
+import {normalize,matches,matchURL,inspect,erase,migrateBlacklist,legacyDefaults} from './core.js';
 test('Domains match only on hostname boundaries',()=>{
  assert(matches('sub.pornhub.com',['pornhub.com']));
  assert(!matches('notpornhub.com',['pornhub.com']));
@@ -107,4 +107,11 @@ test('English and German locale catalogs have identical message keys',async()=>{
  assert.deepEqual(Object.keys(german).sort(),Object.keys(english).sort());
  for(const [key,value] of Object.entries(english))assert(value.message,`English message missing: ${key}`);
  for(const [key,value] of Object.entries(german))assert(value.message,`German message missing: ${key}`);
+});
+test('Own always-clean rules start empty and lose only the formerly prefilled domains',()=>{
+ assert.deepEqual(migrateBlacklist({}),[]);
+ assert.deepEqual(migrateBlacklist({blacklist:[...legacyDefaults]}),[]);
+ assert.deepEqual(migrateBlacklist({blacklist:['pornhub.com','mine.example','xvideos.com']}),['mine.example']);
+ assert.deepEqual(migrateBlacklist({domains:['xnxx.com','legacy.example']}),['legacy.example']);
+ assert.equal(migrateBlacklist({blacklist:['pornhub.com'],blacklistDefaultsRemoved:true}),null,'runs only once, re-added domains stay');
 });

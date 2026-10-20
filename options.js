@@ -1,4 +1,4 @@
-import {defaults,normalize} from './core.js';
+import {normalize} from './core.js';
 import {sourceDefinitions,sourceOrigin} from './sources.js';
 import {applyTranslations,message as t} from './i18n.js';
 import {revealTheme} from './vendor/circular-theme-switch/index.js';
@@ -171,7 +171,7 @@ $('deleteCookies').checked=data.deleteCookies===true&&await chrome.permissions.c
 $('deleteCookies').onchange=async()=>{const checkbox=$('deleteCookies');try{if(checkbox.checked){const granted=await chrome.permissions.request({permissions:['cookies'],origins:['http://*/*','https://*/*']});if(!granted){checkbox.checked=false;$('autoMessage').textContent=t('websiteAccessDenied');return}}else{await chrome.permissions.remove({permissions:['cookies'],origins:['http://*/*','https://*/*']});const origins=[...new Set(currentCustomSources.map(source=>sourceOrigin(source.url)))];if(origins.length&&!await chrome.permissions.contains({origins}))await chrome.permissions.request({origins})}await chrome.storage.local.set({deleteCookies:checkbox.checked});$('autoMessage').textContent=t(checkbox.checked?'cookieEnabled':'cookieDisabled')}catch{checkbox.checked=!checkbox.checked;$('autoMessage').textContent=t('changeFailed')}};
 
 // Own rules
-$('blacklist').value=(data.blacklist??data.domains??defaults).join('\n');$('whitelist').value=(data.whitelist??[]).join('\n');
+$('blacklist').value=(data.blacklist??[]).join('\n');$('whitelist').value=(data.whitelist??[]).join('\n');
 function parseRules(text){
  const list=[];
  for(const line of text.split(/\n/)){

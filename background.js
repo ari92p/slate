@@ -1,4 +1,4 @@
-import {defaults,inspect,erase,countDomains} from './core.js';
+import {migrateBlacklist,inspect,erase,countDomains} from './core.js';
 import {sources,sourceDefinitions,parseList,refreshSources} from './sources.js';
 import {message as t} from './i18n.js';
 const DEFAULT_SCAN_INTERVAL_MINUTES=0;
@@ -16,7 +16,7 @@ async function rules() {
  if(compiledRules)return compiledRules;
  const data=await chrome.storage.local.get(['blacklist','whitelist','domains','sourceData','deleteCookies','customSources','sourceSettings','removedBuiltInSources']);
  const bundled=await bundledSources();
- const blocked=new Set(data.blacklist??data.domains??defaults);
+ const blocked=new Set(data.blacklist??[]);
  for(const src of sourceDefinitions(data.customSources,data.removedBuiltInSources)) {
   if(data.sourceSettings?.[src.id]?.enabled===false)continue;
   for(const d of data.sourceData?.[src.id]?.domains??bundled[src.id]??[])blocked.add(d);
@@ -46,8 +46,8 @@ async function configureScanAlarm() {
 async function setup() {
  await configureScanAlarm();
  await chrome.alarms.create('sources',{periodInMinutes:1440});
- const {blacklist,domains}=await chrome.storage.local.get(['blacklist','domains']);
- if(blacklist===undefined)await chrome.storage.local.set({blacklist:domains??defaults});
+ const blacklist=migrateBlacklist(await chrome.storage.local.get(['blacklist','domains','blacklistDefaultsRemoved']));
+ if(blacklist)await chrome.storage.local.set({blacklist,blacklistDefaultsRemoved:true});
  await schedule();
  const {sourceMeta={},customSources=[],sourceSettings={},removedBuiltInSources=[]}=await chrome.storage.local.get(['sourceMeta','customSources','sourceSettings','removedBuiltInSources']);
  if(sourceDefinitions(customSources,removedBuiltInSources).some(s=>sourceSettings[s.id]?.enabled!==false&&(!sourceMeta[s.id]?.updatedAt || Date.now()-sourceMeta[s.id].updatedAt>86400000)))void refresh();
