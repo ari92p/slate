@@ -5,8 +5,28 @@ export const sources=[
 
 export function sourceOrigin(value) {
  const url=new URL(value);
- if(url.protocol!=='https:'||url.username||url.password)throw Error('Nur öffentliche HTTPS-Adressen sind erlaubt.');
+ if(url.protocol!=='https:'||url.username||url.password)throw Error('Only public HTTPS addresses are allowed.');
  return `${url.origin}/*`;
+}
+
+// A custom list with the address of a bundled list is that bundled list: restore it instead of keeping a copy.
+export function mergeBuiltInDuplicates({customSources=[],removedBuiltInSources=[],sourceSettings={}}) {
+ const byUrl=new Map(sources.map(source=>[source.url,source]));
+ const duplicates=customSources.filter(source=>byUrl.has(source?.url));
+ if(!duplicates.length)return null;
+ const settings={...sourceSettings},restored=new Set();
+ for(const duplicate of duplicates) {
+  const builtIn=byUrl.get(duplicate.url);
+  restored.add(builtIn.id);
+  if(settings[duplicate.id])settings[builtIn.id]={enabled:settings[duplicate.id].enabled!==false};
+  delete settings[duplicate.id];
+ }
+ return {
+  customSources:customSources.filter(source=>!byUrl.has(source?.url)),
+  removedBuiltInSources:removedBuiltInSources.filter(id=>!restored.has(id)),
+  sourceSettings:settings,
+  mergedIds:duplicates.map(source=>source.id),
+ };
 }
 
 export function sourceDefinitions(customSources=[],removedBuiltInSources=[]) {

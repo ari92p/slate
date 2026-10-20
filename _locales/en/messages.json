@@ -40,6 +40,7 @@
   "addListLabel":{"message":"Address of a filter list"},
   "addListPlaceholder":{"message":"https://example.org/filter-list.txt"},
   "addList":{"message":"Add list"},
+  "invalidListAddress":{"message":"Enter the full HTTPS address of a filter list."},
   "allListsCurrent":{"message":"All lists are current"},
   "listsHaveErrors":{"message":"Some lists could not be updated."},
   "refreshLists":{"message":"Update lists"},

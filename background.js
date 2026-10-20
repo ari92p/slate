@@ -1,5 +1,5 @@
 import {migrateBlacklist,inspect,erase,countDomains} from './core.js';
-import {sources,sourceDefinitions,parseList,refreshSources} from './sources.js';
+import {sources,sourceDefinitions,parseList,refreshSources,mergeBuiltInDuplicates} from './sources.js';
 import {message as t} from './i18n.js';
 const DEFAULT_SCAN_INTERVAL_MINUTES=0;
 let queue=Promise.resolve(), queuedScan, sourceCache, compiledRules;
@@ -48,6 +48,13 @@ async function setup() {
  await chrome.alarms.create('sources',{periodInMinutes:1440});
  const blacklist=migrateBlacklist(await chrome.storage.local.get(['blacklist','domains','blacklistDefaultsRemoved']));
  if(blacklist)await chrome.storage.local.set({blacklist,blacklistDefaultsRemoved:true});
+ const stored=await chrome.storage.local.get(['customSources','removedBuiltInSources','sourceSettings','sourceData','sourceMeta']);
+ const merged=mergeBuiltInDuplicates(stored);
+ if(merged) {
+  const sourceData={...(stored.sourceData??{})},sourceMeta={...(stored.sourceMeta??{})};
+  for(const id of merged.mergedIds){delete sourceData[id];delete sourceMeta[id]}
+  await chrome.storage.local.set({customSources:merged.customSources,removedBuiltInSources:merged.removedBuiltInSources,sourceSettings:merged.sourceSettings,sourceData,sourceMeta});
+ }
  await schedule();
  const {sourceMeta={},customSources=[],sourceSettings={},removedBuiltInSources=[]}=await chrome.storage.local.get(['sourceMeta','customSources','sourceSettings','removedBuiltInSources']);
  if(sourceDefinitions(customSources,removedBuiltInSources).some(s=>sourceSettings[s.id]?.enabled!==false&&(!sourceMeta[s.id]?.updatedAt || Date.now()-sourceMeta[s.id].updatedAt>86400000)))void refresh();

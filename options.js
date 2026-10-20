@@ -1,5 +1,5 @@
 import {normalize} from './core.js';
-import {sourceDefinitions,sourceOrigin} from './sources.js';
+import {sources,sourceDefinitions,sourceOrigin} from './sources.js';
 import {applyTranslations,message as t,textLocale} from './i18n.js';
 import {revealTheme} from './vendor/circular-theme-switch/index.js';
 
@@ -197,7 +197,17 @@ $('saveRules').onclick=async()=>{
 };
 
 // Adding, updating and restoring lists
-$('addSourceForm').onsubmit=async event=>{event.preventDefault();const addButton=$('addSource');try{const url=new URL($('sourceUrl').value.trim());const origin=sourceOrigin(url.href);if(sourceDefinitions(currentCustomSources,removedBuiltInSources).some(source=>source.url===url.href))throw Error(t('urlAlreadyAdded'));const granted=await chrome.permissions.request({origins:[origin]});if(!granted)throw Error(t('listAccessDenied'));addButton.disabled=true;const source={id:`custom-${crypto.randomUUID()}`,name:sourceName(url.href),url:url.href};currentCustomSources=[...currentCustomSources,source];currentSourceSettings={...currentSourceSettings,[source.id]:{enabled:true}};await chrome.storage.local.set({customSources:currentCustomSources,sourceSettings:currentSourceSettings});$('listMessage').textContent=t('listLoading');const result=await chrome.runtime.sendMessage({type:'refresh'});if(!result?.ok)throw Error(t('listLoadFailed'));$('addSourceForm').reset();$('listMessage').textContent=t('listAdded');await status()}catch(error){$('listMessage').textContent=error.message||t('listAddFailed')}finally{addButton.disabled=false}};
+function listAddress(value){
+ let url;
+ try{url=new URL(value.trim())}catch{throw Error(t('invalidListAddress'))}
+ if(url.protocol!=='https:'||url.username||url.password)throw Error(t('invalidListAddress'));
+ return url;
+}
+$('addSourceForm').onsubmit=async event=>{event.preventDefault();const addButton=$('addSource');try{const url=listAddress($('sourceUrl').value);
+ // The address of a removed bundled list brings that list back, with its own name and bundled data.
+ const builtIn=sources.find(source=>source.url===url.href);
+ if(builtIn&&removedBuiltInSources.includes(builtIn.id)){removedBuiltInSources=removedBuiltInSources.filter(id=>id!==builtIn.id);currentSourceSettings={...currentSourceSettings,[builtIn.id]:{enabled:true}};await chrome.storage.local.set({removedBuiltInSources,sourceSettings:currentSourceSettings});$('addSourceForm').reset();$('listMessage').textContent=t('listAdded');void chrome.runtime.sendMessage({type:'refresh'});await status();return}
+ const origin=sourceOrigin(url.href);if(sourceDefinitions(currentCustomSources,removedBuiltInSources).some(source=>source.url===url.href))throw Error(t('urlAlreadyAdded'));const granted=await chrome.permissions.request({origins:[origin]});if(!granted)throw Error(t('listAccessDenied'));addButton.disabled=true;const source={id:`custom-${crypto.randomUUID()}`,name:sourceName(url.href),url:url.href};currentCustomSources=[...currentCustomSources,source];currentSourceSettings={...currentSourceSettings,[source.id]:{enabled:true}};await chrome.storage.local.set({customSources:currentCustomSources,sourceSettings:currentSourceSettings});$('listMessage').textContent=t('listLoading');const result=await chrome.runtime.sendMessage({type:'refresh'});if(!result?.ok)throw Error(t('listLoadFailed'));$('addSourceForm').reset();$('listMessage').textContent=t('listAdded');await status()}catch(error){$('listMessage').textContent=error.message||t('listAddFailed')}finally{addButton.disabled=false}};
 $('restoreSources').onclick=async()=>{removedBuiltInSources=[];await chrome.storage.local.set({removedBuiltInSources});$('listMessage').textContent=t('defaultsRestored');await chrome.runtime.sendMessage({type:'refresh'});await status()};
 $('refresh').onclick=async()=>{$('refresh').disabled=true;$('listMessage').textContent=t('updateRunning');try{const result=await chrome.runtime.sendMessage({type:'refresh'});await status();$('listMessage').textContent=t(result?.ok?'updateSuccess':'updateFailed')}catch{$('listMessage').textContent=t('updateFailed')}finally{$('refresh').disabled=false}};
 

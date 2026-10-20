@@ -113,3 +113,17 @@ test('Every icon referenced by the manifest and the background script exists',as
  for(const state of ['idle','working','clean','findings'])for(const px of [16,32])files.push(`icons/${state}-${px}.png`);
  for(const file of files)assert(existsSync(new URL(`./${file}`,import.meta.url)),file);
 });
+test('A custom list with a bundled list address restores the bundled list',async()=>{
+ const {mergeBuiltInDuplicates,sources}=await import('./sources.js');
+ const [hagezi,blp]=sources;
+ assert.equal(mergeBuiltInDuplicates({customSources:[{id:'custom-a',name:'mine',url:'https://example.org/a.txt'}]}),null);
+ const merged=mergeBuiltInDuplicates({
+  customSources:[{id:'custom-1',name:'porn',url:blp.url},{id:'custom-2',name:'mine',url:'https://example.org/a.txt'},{id:'custom-3',name:'nsfw onlydomains',url:hagezi.url}],
+  removedBuiltInSources:['hagezi','blocklistproject'],
+  sourceSettings:{'custom-1':{enabled:true},'custom-3':{enabled:false},'custom-2':{enabled:true}},
+ });
+ assert.deepEqual(merged.customSources.map(source=>source.id),['custom-2']);
+ assert.deepEqual(merged.removedBuiltInSources,[]);
+ assert.deepEqual(merged.sourceSettings,{'custom-2':{enabled:true},blocklistproject:{enabled:true},hagezi:{enabled:false}});
+ assert.deepEqual(merged.mergedIds,['custom-1','custom-3']);
+});
