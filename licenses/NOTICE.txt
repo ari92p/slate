@@ -9,10 +9,10 @@ Source data, copyright and notices remain in data/hagezi.txt.
 The Block List Project
 https://github.com/blocklistproject/Lists
 Source: porn.txt
-The repository LICENSE states Unlicense (see BlockListProject.txt).
-The distributed porn.txt header instead states MIT. Both upstream
-notices have been preserved. Consult upstream to resolve this discrepancy
-before a public marketplace release.
+The repository LICENSE states the Unlicense (see BlockListProject.txt),
+while the header of porn.txt states MIT (checked 2026-10-20). Both allow
+redistribution. Slate keeps the list and its header unmodified in
+data/blocklistproject.txt, which also satisfies the MIT notice requirement.
 
 Retrieved 2026-10-18. Runtime updates download the same public text sources.
 

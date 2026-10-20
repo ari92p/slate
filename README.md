@@ -5,21 +5,21 @@
   </a>
 </h1>
 
-Slate is a discreet browser extension for Chromium-based browsers. It checks the current browser profile against curated domain lists and removes matching history entries with one click. Matching cookies can be removed optionally. The interface is in English and supports light and dark appearance with a circular theme transition.
+Slate is a discreet extension for Chromium-based browsers such as Chrome and Brave. It checks the history of the current browser profile against public adult-content domain lists and removes matching entries with one click. Matching cookies can be removed too, if you turn that on. Everything runs locally in your browser: no account, no server, no analytics.
 
 ![Slate settings](assets/preview.png)
 
 ## Features
 
-- One-click cleanup from the extension icon
-- Individually switchable lists from HaGeZi and Block List Project
-- Visible source links, removal and restoration of bundled lists
+- One-click cleanup from the toolbar icon; the icon shows the state as a small slate (chalk writing means matches, a tick means clean) without a counter badge
+- Recognizes new matching visits as they happen, including pages that redirect elsewhere
+- Also removes the address bar suggestions the browser learned for the start pages of cleaned sites
+- Bundled lists from HaGeZi and Block List Project, each switchable, removable and restorable
 - Custom HTTPS filter lists with their own update status
-- Your own rules: domains to always clean and domains to never clean (takes priority)
-- Optional cookie cleanup with optional permissions
-- Manual, hourly, six-hourly or daily checks
-- Local processing without analytics
-- The toolbar icon shows the state as a small slate: chalk writing means matches, a tick means clean. No counter badge
+- Your own rules: domains to always clean, and domains to never clean, which take priority
+- Optional cookie cleanup, with permissions requested only when you turn it on
+- Checks at browser start or hourly, every 6 or 12 hours, or daily
+- Light and dark appearance
 
 ## Installation from a GitHub release
 
@@ -45,7 +45,9 @@ Cookie cleanup is disabled by default. Enabling it triggers the browser's permis
 
 History, cookies and custom rules are processed locally. Public and user-added lists are downloaded from their configured provider, which receives normal connection data such as the IP address. Slate does not use analytics or transmit browser data. See [PRIVACY.md](PRIVACY.md) for details.
 
-Public lists can contain errors and cannot cover every site. Slate does not clear cache, Local Storage, downloads, bookmarks, open tabs or other browser profiles. Deletion cannot be undone.
+Public lists can contain errors and cannot cover every site. Slate does not clear search queries, cache, Local Storage, downloads, bookmarks, open tabs or other browser profiles. Deletion cannot be undone.
+
+Browsers do not show extensions every history entry: visits synced from other devices and the starting pages of redirects are left out of the history API. Slate catches new ones as they happen, but entries that existed before Slate was installed can stay hidden from it. Install Slate on your other devices too, so their visits are cleaned at the source. A leftover address bar suggestion can be removed with its **Remove suggestion** button (×).
 
 ## Development
 
