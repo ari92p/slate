@@ -1,4 +1,4 @@
-import {migrateBlacklist,inspect,erase,countDomains} from './core.js';
+import {migrateBlacklist,inspect,erase,countDomains,policy,startPages,forgetShortcuts} from './core.js';
 import {sources,sourceDefinitions,parseList,refreshSources,mergeBuiltInDuplicates} from './sources.js';
 import {message as t} from './i18n.js';
 const DEFAULT_SCAN_INTERVAL_MINUTES=0;
@@ -84,7 +84,9 @@ async function update(clean) {
   if(clean&&(found.history.length||found.cookies.length)) {
    await chrome.storage.session.set({activity:{type:'clean',startedAt:Date.now()}});
    await chrome.action.setTitle({title:t('actionCleaning')});
-   result=await erase(chrome,found); found=await inspect(chrome,blocked,whitelist,deleteCookies);
+   result=await erase(chrome,found);
+   await forgetShortcuts(chrome,startPages(found,policy(blocked,whitelist)));
+   found=await inspect(chrome,blocked,whitelist,deleteCookies);
   }
   const count=countDomains(found,blocked);
   const failed=result?.failed||0;

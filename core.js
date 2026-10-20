@@ -45,6 +45,19 @@ export function countDomains(found, blocked) {
  for(const cookie of found.cookies)add(cookie.domain);
  return seen.size;
 }
+// Start pages of every cleaned site, with and without www, over HTTPS and HTTP.
+export function startPages(found, accepts=()=>true) {
+ const hosts=new Set();
+ for(const item of found.history) {try{hosts.add(new URL(item.url).hostname.toLowerCase().replace(/^www\./,''))}catch{}}
+ const urls=[];
+ for(const host of hosts)for(const name of [host,'www.'+host])if(accepts(name))for(const scheme of ['https','http'])urls.push(`${scheme}://${name}/`);
+ return urls;
+}
+// The address bar keeps learned shortcuts until a history entry with exactly their address is deleted.
+// Adding and at once deleting each start page removes the most common ones, which usually point there.
+export async function forgetShortcuts(api, urls) {
+ for(const url of urls) {try{await api.history.addUrl({url});await api.history.deleteUrl({url})}catch{}}
+}
 export async function erase(api, found) {
  let history=0,cookies=0,failed=0;
  for(const item of found.history) { try {await api.history.deleteUrl({url:item.url});history++;} catch {failed++;} }

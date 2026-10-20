@@ -127,3 +127,9 @@ test('A custom list with a bundled list address restores the bundled list',async
  assert.deepEqual(merged.sourceSettings,{'custom-2':{enabled:true},blocklistproject:{enabled:true},hagezi:{enabled:false}});
  assert.deepEqual(merged.mergedIds,['custom-1','custom-3']);
 });
+test('Start pages of cleaned sites cover both schemes and www, and respect the whitelist',async()=>{
+ const {startPages,policy}=await import('./core.js');
+ const found={history:[{url:'https://shooshtime.com/videos/1/'},{url:'http://www.shooshtime.com/a'},{url:'https://cams.example.org/x'}],cookies:[]};
+ assert.deepEqual(startPages(found),['https://shooshtime.com/','http://shooshtime.com/','https://www.shooshtime.com/','http://www.shooshtime.com/','https://cams.example.org/','http://cams.example.org/','https://www.cams.example.org/','http://www.cams.example.org/']);
+ assert.deepEqual(startPages(found,policy(['example.org'],['www.cams.example.org'])),['https://cams.example.org/','http://cams.example.org/']);
+});
