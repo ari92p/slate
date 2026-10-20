@@ -5,88 +5,78 @@
  <meta name="viewport" content="width=device-width,initial-scale=1">
  <title>Slate</title>
  <script src="theme.js"></script>
+ <link rel="stylesheet" href="fonts/commissioner.css">
  <link rel="stylesheet" href="vendor/circular-theme-switch/style.css">
- <link rel="stylesheet" href="gold.css">
+ <link rel="stylesheet" href="slate.css">
 </head>
 <body>
- <main class="app-shell">
-  <header class="app-header enter-up">
-   <div class="brand-row"><strong class="brand-name">Slate</strong><span class="page-title" data-i18n="browserHistoryTagline"></span></div>
-   <div class="header-actions">
-    <button id="themeToggle" class="icon-button secondary" type="button"><span id="themeIcon" aria-hidden="true"></span></button>
-    <button id="scan" class="header-action" type="button" data-i18n="scanNow"></button>
+ <div class="page">
+  <header class="top">
+   <p class="brand"><span class="wordmark" data-i18n="extensionName"></span><span class="tagline" data-i18n="browserHistoryTagline"></span></p>
+   <div class="top-actions">
+    <button id="themeToggle" class="button icon" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="themeGlyph"/></svg></button>
+    <button id="scan" class="button" type="button" data-i18n="scanNow"></button>
    </div>
   </header>
 
-  <div class="workspace">
-   <section class="panel overview-panel enter-up">
-    <div class="panel-heading">
-     <div><span class="eyebrow" data-i18n="overviewEyebrow"></span><h1 data-i18n="cleanupHeading"></h1></div>
-     <span id="statusIndicator" class="status-indicator is-checking" aria-hidden="true"></span>
-    </div>
-    <div class="status-block" aria-live="polite">
-     <p id="status" class="status-value"></p>
-     <p class="status-hint" data-i18n="statusHint"></p>
-     <button id="clean" type="button" data-i18n="cleanNow" hidden></button>
-    </div>
-    <div class="settings-stack">
-     <div class="setting-row">
-      <div><label class="setting-title" for="scanInterval" data-i18n="scanRhythm"></label><small data-i18n="scanRhythmHint"></small></div>
-      <select id="scanInterval"><option value="0" data-i18n="startOnly"></option><option value="60" data-i18n="hourly"></option><option value="360" data-i18n="every6Hours"></option><option value="720" data-i18n="every12Hours"></option><option value="1440" data-i18n="daily"></option></select>
-     </div>
-     <p id="intervalMessage" class="inline-message" aria-live="polite"></p>
-     <label class="setting-row toggle-row" for="deleteCookies"><span><strong class="setting-title" data-i18n="cookiesRemove"></strong><small data-i18n="cookiesHint"></small></span><input id="deleteCookies" type="checkbox"></label>
-     <p id="cookieMessage" class="inline-message" aria-live="polite"></p>
-    </div>
-   </section>
-
-   <section class="panel rules-panel enter-up">
-    <div class="panel-heading rules-heading">
-     <div><span class="eyebrow" data-i18n="listsEyebrow"></span><h1 data-i18n="detectionHeading"></h1></div>
-     <button id="refresh" class="secondary compact-button" type="button" data-i18n="refresh"></button>
-    </div>
-    <div class="rule-tabs" role="tablist">
-     <button class="rule-tab" id="tab-blocklists" role="tab" aria-selected="true" aria-controls="panel-blocklists" data-tab="blocklists" type="button" data-i18n="blocklists"></button>
-     <button class="rule-tab" id="tab-blacklist" role="tab" aria-selected="false" aria-controls="panel-blacklist" data-tab="blacklist" type="button" data-i18n="blacklist"></button>
-     <button class="rule-tab" id="tab-whitelist" role="tab" aria-selected="false" aria-controls="panel-whitelist" data-tab="whitelist" type="button" data-i18n="whitelist"></button>
-    </div>
-    <div class="rule-panels">
-    <div id="panel-blocklists" class="rule-panel" role="tabpanel" aria-labelledby="tab-blocklists">
-     <div id="sourceList" class="source-list"></div>
-     <form id="addSourceForm" class="add-source-form">
-      <input id="sourceUrl" type="url" inputmode="url" required data-i18n-placeholder="addListPlaceholder">
-      <button id="addSource" type="submit" data-i18n="add"></button>
-     </form>
-     <div class="source-footer">
-      <button id="restoreSources" class="text-button" type="button" data-i18n="restoreDefaults" hidden></button>
-      <span id="sourceState" data-i18n="allListsCurrent"></span>
-     </div>
-     <p id="refreshMessage" class="inline-message" aria-live="polite"></p>
-     <p id="sourceMessage" class="inline-message" aria-live="polite"></p>
-    </div>
-    <div id="panel-blacklist" class="rule-panel" role="tabpanel" aria-labelledby="tab-blacklist" hidden>
-     <p class="rule-description" data-i18n="blacklistDescription"></p>
-     <textarea id="blacklist" spellcheck="false"></textarea>
-     <div class="rule-footer"><button id="saveBlacklist" type="button" data-i18n="saveBlacklist"></button><p id="blacklistMessage" class="inline-message" aria-live="polite"></p></div>
-    </div>
-    <div id="panel-whitelist" class="rule-panel" role="tabpanel" aria-labelledby="tab-whitelist" hidden>
-     <p class="rule-description" data-i18n="whitelistDescription"></p>
-     <textarea id="whitelist" spellcheck="false"></textarea>
-     <div class="rule-footer"><button id="saveWhitelist" type="button" data-i18n="saveWhitelist"></button><p id="whitelistMessage" class="inline-message" aria-live="polite"></p></div>
-    </div>
-    </div>
-   </section>
-  </div>
-
-  <section class="info-panel enter-up">
-   <div><span class="eyebrow" data-i18n="infoEyebrow"></span><h2 data-i18n="infoHeading"></h2></div>
-   <div class="info-grid">
-    <p><strong data-i18n="infoTitleHistory"></strong><span data-i18n="infoHistory"></span></p>
-    <p><strong data-i18n="infoTitleLimits"></strong><span data-i18n="infoLimits"></span></p>
-    <p><strong data-i18n="infoTitlePrivacy"></strong><span data-i18n="infoPrivacy"></span></p>
-   </div>
+  <section class="slate" data-i18n-aria-label="slateLabel">
+   <div id="slateStage" class="slate-stage" aria-live="polite"></div>
+   <div id="slateWet" class="wet"></div>
   </section>
- </main>
+
+  <main class="sheet">
+   <section class="section" aria-labelledby="listsHeading">
+    <header><h2 id="listsHeading" data-i18n="sectionLists"></h2><p data-i18n="sectionListsHint"></p></header>
+    <div class="section-body">
+     <ul id="sourceList" class="rows"></ul>
+     <form id="addSourceForm" class="add">
+      <label class="sr" for="sourceUrl" data-i18n="addListLabel"></label>
+      <input id="sourceUrl" class="field" type="url" inputmode="url" required data-i18n-placeholder="addListPlaceholder">
+      <button id="addSource" class="button outline" type="submit" data-i18n="addList"></button>
+     </form>
+     <p class="foot"><span id="sourceState"></span><button id="refresh" class="text-button" type="button" data-i18n="refreshLists"></button><button id="restoreSources" class="text-button" type="button" data-i18n="restoreDefaults" hidden></button></p>
+     <p id="listMessage" class="message" aria-live="polite"></p>
+    </div>
+   </section>
+
+   <section class="section" aria-labelledby="autoHeading">
+    <header><h2 id="autoHeading" data-i18n="sectionAuto"></h2><p data-i18n="sectionAutoHint"></p></header>
+    <div class="section-body">
+     <ul class="rows">
+      <li class="row">
+       <div class="row-copy"><label class="row-title" for="scanInterval" data-i18n="scanSchedule"></label><span class="row-meta" data-i18n="scanScheduleHint"></span></div>
+       <select id="scanInterval" class="select"><option value="0" data-i18n="startOnly"></option><option value="60" data-i18n="hourly"></option><option value="360" data-i18n="every6Hours"></option><option value="720" data-i18n="every12Hours"></option><option value="1440" data-i18n="daily"></option></select>
+      </li>
+      <li class="row">
+       <div class="row-copy"><label class="row-title" for="deleteCookies" data-i18n="cookiesLabel"></label><span class="row-meta" data-i18n="cookiesLabelHint"></span></div>
+       <input id="deleteCookies" class="switch" type="checkbox">
+      </li>
+     </ul>
+     <p id="autoMessage" class="message" aria-live="polite"></p>
+    </div>
+   </section>
+
+   <section class="section" aria-labelledby="rulesHeading">
+    <header><h2 id="rulesHeading" data-i18n="sectionRules"></h2><p data-i18n="sectionRulesHint"></p></header>
+    <div class="section-body">
+     <div class="rules">
+      <div class="rule"><label for="blacklist" data-i18n="ruleAlways"></label><small data-i18n="ruleAlwaysHint"></small><textarea id="blacklist" spellcheck="false" dir="ltr"></textarea></div>
+      <div class="rule"><label for="whitelist" data-i18n="ruleNever"></label><small data-i18n="ruleNeverHint"></small><textarea id="whitelist" spellcheck="false" dir="ltr"></textarea></div>
+     </div>
+     <div class="rules-foot"><button id="saveRules" class="button outline" type="button" data-i18n="saveRules"></button><p id="rulesMessage" class="message" aria-live="polite"></p></div>
+    </div>
+   </section>
+
+   <section class="section" aria-labelledby="infoHeading">
+    <header><h2 id="infoHeading" data-i18n="infoHeading"></h2></header>
+    <div class="section-body prose">
+     <p><strong data-i18n="infoTitleHistory"></strong><span data-i18n="infoHistory"></span></p>
+     <p><strong data-i18n="infoTitleLimits"></strong><span data-i18n="infoLimits"></span></p>
+     <p><strong data-i18n="infoTitlePrivacy"></strong><span data-i18n="infoPrivacy"></span></p>
+    </div>
+   </section>
+  </main>
+ </div>
  <script type="module" src="options.js"></script>
 </body>
 </html>

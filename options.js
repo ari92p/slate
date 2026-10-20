@@ -5,60 +5,103 @@ import {revealTheme} from './vendor/circular-theme-switch/index.js';
 
 const $=id=>document.getElementById(id);
 const locale=chrome.i18n.getUILanguage();
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let currentCustomSources=[];
 let currentSourceSettings={};
 let currentSourceMeta={};
 let removedBuiltInSources=[];
+let busy=false;
 
 applyTranslations();
 
-function formattedDate(value){return new Intl.DateTimeFormat(locale,{dateStyle:'short',timeStyle:'short'}).format(new Date(value))}
+function formattedDate(value){return new Intl.DateTimeFormat(locale,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value))}
+function formattedCount(value){return Number(value??0).toLocaleString(locale)}
+
+// Theme
+const moon='M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z';
+const sun='M12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4';
+function updateThemeButton(){
+ const light=document.documentElement.dataset.theme==='light';
+ $('themeGlyph').setAttribute('d',light?moon:sun);
+ const label=t(light?'themeToDark':'themeToLight');
+ $('themeToggle').setAttribute('aria-label',label);$('themeToggle').title=label;
+}
+updateThemeButton();
+$('themeToggle').onclick=event=>revealTheme(()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';localStorage.setItem('slate-theme',document.documentElement.dataset.theme);updateThemeButton()},{event});
+
+// Slate
+function slateFor(value){
+ if(!value)return {title:t('slateNotCheckedTitle'),text:t('slateNotCheckedText'),action:'scanNow'};
+ if(value.error)return {title:t('slateScanErrorTitle'),text:t('slateScanErrorText'),error:true};
+ const date=formattedDate(value.checkedAt);
+ const findings=value.domains===1?t('slateFindingsOne'):t('slateFindingsMany',[formattedCount(value.domains)]);
+ if(value.failed>0)return {title:value.domains>0?findings:t('slateCleanedTitle'),text:t('slateDeleteErrorText'),error:true,action:'cleanAgain'};
+ if(value.domains>0)return {title:findings,text:t('slateFindingsText',[date]),action:'cleanHistory'};
+ if(value.lastClean)return {title:t('slateCleanedTitle'),text:t('slateCleanedText',[formattedCount(value.lastClean.history),date]),tick:true};
+ return {title:t('slateCleanTitle'),text:t('slateCleanText',[date]),tick:true};
+}
+const working={
+ checking:{title:t('slateCheckingTitle'),text:t('slateCheckingText')},
+ cleaning:{title:t('slateCleaningTitle'),text:t('slateCleaningText')},
+};
+function buildState(state,{sizer=false}={}){
+ const element=document.createElement('div');element.className=sizer?'state sizer':'state';
+ if(sizer){element.setAttribute('aria-hidden','true');element.inert=true}
+ if(state.tick)element.insertAdjacentHTML('beforeend','<svg class="tick" viewBox="0 0 44 44" aria-hidden="true"><path d="M8.5 23.5c3 2.4 6 5.6 8.6 9.3C22 23 28.7 14.6 36 9.2"/></svg>');
+ const title=document.createElement('h1');title.textContent=state.title;
+ const text=document.createElement('p');text.textContent=state.text;if(state.error)text.className='error';
+ element.append(title,text);
+ if(state.action){
+  const button=document.createElement('button');button.type='button';button.className='chalk-button';button.textContent=t(state.action);
+  button.onclick=state.action==='scanNow'?scan:clean;button.disabled=busy;
+  element.append(button);
+ }
+ return element;
+}
+// The longest variant of every state sits invisibly in the same grid cell, so the slate never changes height.
+function renderSizers(){
+ const now=Date.now();
+ const variants=[slateFor(undefined),slateFor({error:'scan'}),slateFor({domains:99999,failed:1,checkedAt:now}),slateFor({domains:99999,failed:0,checkedAt:now}),slateFor({domains:0,checkedAt:now,lastClean:{history:99999}}),slateFor({domains:0,checkedAt:now}),working.checking,working.cleaning];
+ $('slateStage').replaceChildren(...variants.map(state=>buildState(state,{sizer:true})));
+}
+let shownKey='';
+function showSlate(state,{wipe=false}={}){
+ const key=JSON.stringify(state);
+ if(key===shownKey&&!wipe)return Promise.resolve();
+ shownKey=key;
+ const stage=$('slateStage');const next=buildState(state);
+ const current=[...stage.querySelectorAll('.state:not(.sizer)')];
+ if(!wipe||reducedMotion.matches||!current.length){for(const element of current)element.remove();stage.append(next);return Promise.resolve()}
+ const wet=$('slateWet');
+ for(const element of current.slice(0,-1))element.remove();
+ const old=current.at(-1);
+ return new Promise(resolve=>{
+  old.classList.add('leaving');next.classList.add('arriving');stage.append(next);wet.className='wet on';
+  old.addEventListener('animationend',()=>{old.remove();wet.className='wet on drying'},{once:true});
+  next.addEventListener('animationend',()=>{next.classList.remove('arriving');setTimeout(()=>{if(wet.classList.contains('drying'))wet.className='wet'},1800);resolve()},{once:true});
+ });
+}
+function setBusy(value){busy=value;$('scan').disabled=value;for(const button of $('slateStage').querySelectorAll('.state:not(.sizer) .chalk-button'))button.disabled=value}
+
+// Lists
 function sourceDescription(source){
  const meta=currentSourceMeta[source.id];
- const count=(meta?.count??source.bundledCount??0).toLocaleString(locale);
- if(currentSourceSettings[source.id]?.enabled===false)return t('sourceDisabled',[count]);
- if(meta?.error)return t(meta.error)||meta.error;
- if(meta?.updatedAt)return t('sourceUpdated',[count,formattedDate(meta.updatedAt)]);
- return source.builtIn?t('sourceBundled',[count]):t('sourceNotLoaded');
+ const count=formattedCount(meta?.count??source.bundledCount??0);
+ if(currentSourceSettings[source.id]?.enabled===false)return {text:t('sourceOff',[count])};
+ if(meta?.error)return {text:t(meta.error)||meta.error,error:true};
+ if(meta?.updatedAt)return {text:t('sourceDomains',[count,formattedDate(meta.updatedAt)])};
+ return {text:source.builtIn?t('sourceDomainsBundled',[count]):t('sourceNotLoaded')};
 }
 function sourceName(url){
  const parsed=new URL(url);
  const leaf=parsed.pathname.split('/').filter(Boolean).at(-1)?.replace(/\.(txt|list|hosts)$/i,'');
  return (leaf||parsed.hostname).replace(/[-_]+/g,' ').trim().slice(0,60);
 }
-function updateThemeButton(){
- const light=document.documentElement.dataset.theme==='light';
- $('themeIcon').textContent=light?'☾':'☀';
- const label=t(light?'themeToDark':'themeToLight');
- $('themeToggle').setAttribute('aria-label',label);$('themeToggle').title=label;
+function sourceLabel(url){
+ const parsed=new URL(url);
+ if(parsed.hostname==='raw.githubusercontent.com'){const [owner,repo]=parsed.pathname.split('/').filter(Boolean);return `github.com/${owner}/${repo}`}
+ return parsed.hostname+parsed.pathname;
 }
-function activateTab(name,{focus=false}={}){
- const valid=['blocklists','blacklist','whitelist'].includes(name)?name:'blocklists';
- for(const button of document.querySelectorAll('.rule-tab')){const active=button.dataset.tab===valid;button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;if(active&&focus)button.focus()}
- for(const panel of document.querySelectorAll('.rule-panel'))panel.hidden=panel.id!==`panel-${valid}`;
- localStorage.setItem('slate-rule-tab',valid);
-}
-function setStatusIndicator(state){$('statusIndicator').className=`status-indicator ${state}`}
-// Panels get a fixed height measured with optional actions visible, so later state changes never resize them. Side by side they share the tallest height.
-let panelWidth=0;
-function syncPanelHeight(){
- const workspace=document.querySelector('.workspace');const panels=[...workspace.querySelectorAll('.panel')];const width=workspace.clientWidth;
- const previous=panels.map(panel=>width===panelWidth?parseFloat(panel.style.getPropertyValue('--panel-height'))||0:0);
- for(const panel of panels)panel.style.removeProperty('--panel-height');
- // Optional controls are measured visible so showing them later never grows a panel.
- const optional=[$('clean'),$('restoreSources')].map(node=>[node,node.hidden]);for(const [node] of optional)node.hidden=false;workspace.style.alignItems='start';
- let heights=panels.map((panel,index)=>Math.max(previous[index],Math.ceil(panel.getBoundingClientRect().height)));
- const sideBySide=new Set(panels.map(panel=>panel.offsetTop)).size===1;if(sideBySide)heights=heights.map(()=>Math.max(...heights));
- for(const [node,hidden] of optional)node.hidden=hidden;workspace.style.alignItems='';panelWidth=width;
- panels.forEach((panel,index)=>panel.style.setProperty('--panel-height',`${heights[index]}px`));
-}
-new ResizeObserver(()=>{if(document.querySelector('.workspace').clientWidth!==panelWidth)syncPanelHeight()}).observe(document.querySelector('.workspace'));
-
-updateThemeButton();
-$('themeToggle').onclick=event=>revealTheme(()=>{document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';localStorage.setItem('slate-theme',document.documentElement.dataset.theme);updateThemeButton()},{event});
-for(const button of document.querySelectorAll('.rule-tab'))button.onclick=()=>activateTab(button.dataset.tab);
-activateTab(localStorage.getItem('slate-rule-tab'));
-
 async function removeSource(source){
  const data=await chrome.storage.local.get(['sourceData','sourceMeta','deleteCookies']);
  const sourceData={...(data.sourceData??{})};delete sourceData[source.id];
@@ -67,45 +110,91 @@ async function removeSource(source){
  if(source.builtIn){removedBuiltInSources=[...new Set([...removedBuiltInSources,source.id])]}else{currentCustomSources=currentCustomSources.filter(item=>item.id!==source.id)}
  await chrome.storage.local.set({customSources:currentCustomSources,removedBuiltInSources,sourceData,sourceMeta,sourceSettings});
  if(!source.builtIn){const origin=sourceOrigin(source.url);const used=currentCustomSources.some(item=>sourceOrigin(item.url)===origin);if(!data.deleteCookies&&!used)await chrome.permissions.remove({origins:[origin]})}
- $('sourceMessage').textContent=t('sourceRemoved');await status();
+ $('listMessage').textContent=t('sourceRemoved');await status();
 }
 function renderSources(){
- const container=$('sourceList');container.replaceChildren();
- for(const source of sourceDefinitions(currentCustomSources,removedBuiltInSources)){
-  const row=document.createElement('div');row.className='source-row';
-  const copy=document.createElement('div');copy.className='source-copy';
-  const name=document.createElement('strong');name.textContent=source.name;
-  const link=document.createElement('a');link.href=source.url;link.target='_blank';link.rel='noreferrer';link.textContent=source.url.replace(/^https:\/\/raw\.githubusercontent\.com\//,'github.com/');link.title=source.url;
-  const description=document.createElement('small');description.textContent=sourceDescription(source);copy.append(name,link,description);
-  const controls=document.createElement('div');controls.className='source-controls';
-  const remove=document.createElement('button');remove.type='button';remove.className='remove-source';remove.textContent=t('remove');remove.setAttribute('aria-label',`${t('remove')}: ${source.name}`);remove.onclick=async()=>{remove.disabled=true;try{await removeSource(source)}catch{$('sourceMessage').textContent=t('sourceRemoveFailed')}finally{remove.disabled=false}};
-  const label=document.createElement('label');label.className='source-toggle';
-  const toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=currentSourceSettings[source.id]?.enabled!==false;toggle.setAttribute('aria-label',t('enableSource',[source.name]));
-  toggle.onchange=async()=>{toggle.disabled=true;currentSourceSettings={...currentSourceSettings,[source.id]:{enabled:toggle.checked}};try{await chrome.storage.local.set({sourceSettings:currentSourceSettings});$('sourceMessage').textContent=t(toggle.checked?'sourceActivated':'sourceDeactivated',[source.name]);if(toggle.checked&&!currentSourceMeta[source.id]?.updatedAt)await chrome.runtime.sendMessage({type:'refresh'});await status()}catch{toggle.checked=!toggle.checked;$('sourceMessage').textContent=t('changeFailed')}finally{toggle.disabled=false}};
-  label.append(toggle);controls.append(remove,label);row.append(copy,controls);container.append(row);
- }
+ const sources=sourceDefinitions(currentCustomSources,removedBuiltInSources);
+ const rows=sources.map(source=>{
+  const row=document.createElement('li');row.className='row';
+  const copy=document.createElement('div');copy.className='row-copy';
+  const name=document.createElement('span');name.className='row-title';name.textContent=source.name;
+  const description=sourceDescription(source);
+  const meta=document.createElement('span');meta.className=description.error?'row-meta error':'row-meta';meta.textContent=description.text;
+  const link=document.createElement('a');link.className='row-link';link.href=source.url;link.target='_blank';link.rel='noreferrer';link.textContent=sourceLabel(source.url);link.title=source.url;
+  copy.append(name,meta,link);
+  const actions=document.createElement('div');actions.className='row-actions';
+  const remove=document.createElement('button');remove.type='button';remove.className='text-button';remove.textContent=t('remove');remove.setAttribute('aria-label',`${t('remove')}: ${source.name}`);
+  remove.onclick=async()=>{remove.disabled=true;try{await removeSource(source)}catch{$('listMessage').textContent=t('sourceRemoveFailed')}finally{remove.disabled=false}};
+  const toggle=document.createElement('input');toggle.type='checkbox';toggle.className='switch';toggle.checked=currentSourceSettings[source.id]?.enabled!==false;toggle.setAttribute('aria-label',t('enableSource',[source.name]));
+  toggle.onchange=async()=>{toggle.disabled=true;currentSourceSettings={...currentSourceSettings,[source.id]:{enabled:toggle.checked}};try{await chrome.storage.local.set({sourceSettings:currentSourceSettings});$('listMessage').textContent=t(toggle.checked?'sourceActivated':'sourceDeactivated',[source.name]);if(toggle.checked&&!currentSourceMeta[source.id]?.updatedAt)await chrome.runtime.sendMessage({type:'refresh'});await status()}catch{toggle.checked=!toggle.checked;$('listMessage').textContent=t('changeFailed')}finally{toggle.disabled=false}};
+  actions.append(remove,toggle);row.append(copy,actions);
+  return row;
+ });
+ $('sourceList').replaceChildren(...rows);
+ const failing=sources.some(source=>currentSourceSettings[source.id]?.enabled!==false&&currentSourceMeta[source.id]?.error);
+ $('sourceState').textContent=t(failing?'listsHaveErrors':'allListsCurrent');
  $('restoreSources').hidden=removedBuiltInSources.length===0;
 }
+
 async function status(){
- const data=await chrome.storage.local.get(['status','sourceMeta','customSources','sourceSettings','removedBuiltInSources']);const value=data.status;
- if(value?.error){$('status').textContent=value.error;setStatusIndicator('is-checking')}
- else if(value){$('status').textContent=t('statusDomains',[String(value.domains??0),String(value.failed??0),formattedDate(value.checkedAt)]);setStatusIndicator(value.failed?'is-checking':value.domains>0?'has-findings':'is-clean')}
- else{$('status').textContent=t('statusNotChecked');setStatusIndicator('is-checking')}
- $('clean').hidden=!!value?.error||!(value?.domains>0);currentCustomSources=data.customSources??[];currentSourceSettings=data.sourceSettings??{};currentSourceMeta=data.sourceMeta??{};removedBuiltInSources=data.removedBuiltInSources??[];renderSources();syncPanelHeight();
+ const data=await chrome.storage.local.get(['status','sourceMeta','customSources','sourceSettings','removedBuiltInSources']);
+ currentCustomSources=data.customSources??[];currentSourceSettings=data.sourceSettings??{};currentSourceMeta=data.sourceMeta??{};removedBuiltInSources=data.removedBuiltInSources??[];
+ renderSources();
+ if(!busy)await showSlate(slateFor(data.status));
+}
+async function scan(){
+ if(busy)return;setBusy(true);
+ try{await showSlate(working.checking);await chrome.runtime.sendMessage({type:'scan'})}
+ finally{setBusy(false);await status()}
+}
+async function clean(){
+ if(busy)return;setBusy(true);
+ let failed=false;
+ try{
+  const [result]=await Promise.all([chrome.runtime.sendMessage({type:'clean'}),showSlate(working.cleaning,{wipe:true})]);
+  if(!result?.ok)failed=true;
+ }catch{failed=true}
+ setBusy(false);
+ if(failed)await showSlate({title:t('slateScanErrorTitle'),text:t('cleanupFailed'),error:true,action:'cleanAgain'});
+ else await status();
+ $('slateStage').querySelector('.state:not(.sizer) .chalk-button')?.focus();
 }
 
+renderSizers();
 const data=await chrome.storage.local.get(['blacklist','whitelist','domains','deleteCookies','scanIntervalMinutes','customSources','removedBuiltInSources']);
 currentCustomSources=data.customSources??[];removedBuiltInSources=data.removedBuiltInSources??[];
+
+// Automatic
 $('scanInterval').value=String(data.scanIntervalMinutes??0);
-$('scanInterval').onchange=async()=>{try{await chrome.storage.local.set({scanIntervalMinutes:Number($('scanInterval').value)});$('intervalMessage').textContent=t('intervalSaved')}catch{$('intervalMessage').textContent=t('saveFailed')}};
+$('scanInterval').onchange=async()=>{try{await chrome.storage.local.set({scanIntervalMinutes:Number($('scanInterval').value)});$('autoMessage').textContent=t('intervalSaved')}catch{$('autoMessage').textContent=t('saveFailed')}};
 $('deleteCookies').checked=data.deleteCookies===true&&await chrome.permissions.contains({permissions:['cookies'],origins:['http://*/*','https://*/*']});
-$('deleteCookies').onchange=async()=>{const checkbox=$('deleteCookies');try{if(checkbox.checked){const granted=await chrome.permissions.request({permissions:['cookies'],origins:['http://*/*','https://*/*']});if(!granted){checkbox.checked=false;$('cookieMessage').textContent=t('websiteAccessDenied');return}}else{await chrome.permissions.remove({permissions:['cookies'],origins:['http://*/*','https://*/*']});const origins=[...new Set(currentCustomSources.map(source=>sourceOrigin(source.url)))];if(origins.length&&!await chrome.permissions.contains({origins}))await chrome.permissions.request({origins})}await chrome.storage.local.set({deleteCookies:checkbox.checked});$('cookieMessage').textContent=t(checkbox.checked?'cookieEnabled':'cookieDisabled')}catch{checkbox.checked=!checkbox.checked;$('cookieMessage').textContent=t('changeFailed')}};
+$('deleteCookies').onchange=async()=>{const checkbox=$('deleteCookies');try{if(checkbox.checked){const granted=await chrome.permissions.request({permissions:['cookies'],origins:['http://*/*','https://*/*']});if(!granted){checkbox.checked=false;$('autoMessage').textContent=t('websiteAccessDenied');return}}else{await chrome.permissions.remove({permissions:['cookies'],origins:['http://*/*','https://*/*']});const origins=[...new Set(currentCustomSources.map(source=>sourceOrigin(source.url)))];if(origins.length&&!await chrome.permissions.contains({origins}))await chrome.permissions.request({origins})}await chrome.storage.local.set({deleteCookies:checkbox.checked});$('autoMessage').textContent=t(checkbox.checked?'cookieEnabled':'cookieDisabled')}catch{checkbox.checked=!checkbox.checked;$('autoMessage').textContent=t('changeFailed')}};
+
+// Own rules
 $('blacklist').value=(data.blacklist??data.domains??defaults).join('\n');$('whitelist').value=(data.whitelist??[]).join('\n');
-for(const [key,button,message] of [['blacklist','saveBlacklist','blacklistMessage'],['whitelist','saveWhitelist','whitelistMessage']])$(button).onclick=async()=>{try{const list=[...new Set($(key).value.split(/\n/).map(normalize).filter(Boolean))];await chrome.storage.local.set({[key]:list});$(message).textContent=t('domainsSaved',[String(list.length)])}catch(error){$(message).textContent=error.message}};
-$('addSourceForm').onsubmit=async event=>{event.preventDefault();const addButton=$('addSource');try{const url=new URL($('sourceUrl').value.trim());const origin=sourceOrigin(url.href);if(sourceDefinitions(currentCustomSources,removedBuiltInSources).some(source=>source.url===url.href))throw Error(t('urlAlreadyAdded'));const granted=await chrome.permissions.request({origins:[origin]});if(!granted)throw Error(t('listAccessDenied'));addButton.disabled=true;const source={id:`custom-${crypto.randomUUID()}`,name:sourceName(url.href),url:url.href};currentCustomSources=[...currentCustomSources,source];currentSourceSettings={...currentSourceSettings,[source.id]:{enabled:true}};await chrome.storage.local.set({customSources:currentCustomSources,sourceSettings:currentSourceSettings});$('sourceMessage').textContent=t('listLoading');const result=await chrome.runtime.sendMessage({type:'refresh'});if(!result?.ok)throw Error(t('listLoadFailed'));$('addSourceForm').reset();$('sourceMessage').textContent=t('listAdded');await status()}catch(error){$('sourceMessage').textContent=error.message||t('listAddFailed')}finally{addButton.disabled=false}};
-$('restoreSources').onclick=async()=>{removedBuiltInSources=[];await chrome.storage.local.set({removedBuiltInSources});$('sourceMessage').textContent=t('defaultsRestored');await chrome.runtime.sendMessage({type:'refresh'});await status()};
-$('scan').onclick=async()=>{$('scan').disabled=true;setStatusIndicator('is-checking');try{$('status').textContent=t('scanRunning');await chrome.runtime.sendMessage({type:'scan'});await status()}finally{$('scan').disabled=false}};
-$('clean').onclick=async()=>{$('clean').disabled=true;$('clean').hidden=true;setStatusIndicator('is-checking');$('status').textContent=t('cleanupRunning');try{const result=await chrome.runtime.sendMessage({type:'clean'});if(!result?.ok)throw Error();await status()}catch{$('status').textContent=t('cleanupFailed');$('clean').hidden=false}finally{$('clean').disabled=false}};
-$('refresh').onclick=async()=>{$('refresh').disabled=true;$('refreshMessage').textContent=t('updateRunning');try{const result=await chrome.runtime.sendMessage({type:'refresh'});await status();$('refreshMessage').textContent=t(result?.ok?'updateSuccess':'updateFailed')}catch{$('refreshMessage').textContent=t('updateFailed')}finally{$('refresh').disabled=false}};
+function parseRules(text){
+ const list=[];
+ for(const line of text.split(/\n/)){
+  let domain;
+  try{domain=normalize(line)}catch{throw Error(t('invalidDomain',[line.trim()]))}
+  if(domain)list.push(domain);
+ }
+ return [...new Set(list)];
+}
+$('saveRules').onclick=async()=>{
+ try{
+  const blacklist=parseRules($('blacklist').value),whitelist=parseRules($('whitelist').value);
+  await chrome.storage.local.set({blacklist,whitelist});
+  $('blacklist').value=blacklist.join('\n');$('whitelist').value=whitelist.join('\n');
+  $('rulesMessage').textContent=t('rulesSaved');
+ }catch(error){$('rulesMessage').textContent=error.message||t('saveFailed')}
+};
+
+// Adding, updating and restoring lists
+$('addSourceForm').onsubmit=async event=>{event.preventDefault();const addButton=$('addSource');try{const url=new URL($('sourceUrl').value.trim());const origin=sourceOrigin(url.href);if(sourceDefinitions(currentCustomSources,removedBuiltInSources).some(source=>source.url===url.href))throw Error(t('urlAlreadyAdded'));const granted=await chrome.permissions.request({origins:[origin]});if(!granted)throw Error(t('listAccessDenied'));addButton.disabled=true;const source={id:`custom-${crypto.randomUUID()}`,name:sourceName(url.href),url:url.href};currentCustomSources=[...currentCustomSources,source];currentSourceSettings={...currentSourceSettings,[source.id]:{enabled:true}};await chrome.storage.local.set({customSources:currentCustomSources,sourceSettings:currentSourceSettings});$('listMessage').textContent=t('listLoading');const result=await chrome.runtime.sendMessage({type:'refresh'});if(!result?.ok)throw Error(t('listLoadFailed'));$('addSourceForm').reset();$('listMessage').textContent=t('listAdded');await status()}catch(error){$('listMessage').textContent=error.message||t('listAddFailed')}finally{addButton.disabled=false}};
+$('restoreSources').onclick=async()=>{removedBuiltInSources=[];await chrome.storage.local.set({removedBuiltInSources});$('listMessage').textContent=t('defaultsRestored');await chrome.runtime.sendMessage({type:'refresh'});await status()};
+$('refresh').onclick=async()=>{$('refresh').disabled=true;$('listMessage').textContent=t('updateRunning');try{const result=await chrome.runtime.sendMessage({type:'refresh'});await status();$('listMessage').textContent=t(result?.ok?'updateSuccess':'updateFailed')}catch{$('listMessage').textContent=t('updateFailed')}finally{$('refresh').disabled=false}};
+
+$('scan').onclick=scan;
 chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&(changes.status||changes.sourceMeta||changes.sourceSettings||changes.customSources||changes.removedBuiltInSources))void status()});
 await status();

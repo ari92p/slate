@@ -19,7 +19,8 @@ FILES=(
   theme.js
   vendor
   i18n.js
-  gold.css
+  slate.css
+  fonts
   options.js
   sources.js
   _locales

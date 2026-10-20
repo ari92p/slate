@@ -88,7 +88,7 @@ async function update(clean) {
  } catch(e) {
   await icon('#a16207');await chrome.action.setBadgeText({text:'!'});
   await chrome.action.setTitle({title:t('actionOpenSettings')});
-  await chrome.storage.local.set({status:{error:t('scanPermissionError'),checkedAt:Date.now()}});
+  await chrome.storage.local.set({status:{error:'scan',checkedAt:Date.now()}});
  }
 }
 chrome.action.onClicked.addListener(()=>{void schedule(true)});

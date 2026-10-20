@@ -15,7 +15,7 @@ Slate is a discreet browser extension for Chromium-based browsers. It checks the
 - Individually switchable lists from HaGeZi and Block List Project
 - Visible source links, removal and restoration of bundled lists
 - Custom HTTPS filter lists with their own update status
-- Custom blacklist and prioritized whitelist
+- Your own rules: domains to always clean and domains to never clean (takes priority)
 - Optional cookie cleanup with optional permissions
 - Manual, hourly, six-hourly or daily checks
 - Local processing without analytics
@@ -38,7 +38,7 @@ Clone this repository, open the browser's extension page, enable Developer mode 
 
 ## Usage
 
-Click the Slate icon to clean matching history entries. Open the icon's context menu and choose **Slate: Settings and status** (German: **Slate: Einstellungen und Status**) to manage scans, blocklists, cookie cleanup, blacklist and whitelist.
+Click the Slate icon to clean matching history entries. Open the icon's context menu and choose **Slate: Settings and status** (German: **Slate: Einstellungen und Status**) to manage scans, lists, cookie cleanup and your own rules.
 
 Cookie cleanup is disabled by default. Enabling it triggers the browser's permission prompt and may sign you out of matching sites.
 
@@ -64,5 +64,6 @@ The release ZIP is written to `dist/` and uses the version from `manifest.json`.
 - [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists), `nsfw-onlydomains.txt`, GPL-3.0
 - [Block List Project](https://github.com/blocklistproject/Lists), `porn.txt`, Unlicense; the delivered list header also mentions MIT
 - [Circular Theme Switch](https://github.com/ari92p/circular-theme-switch) v1.1.3, bundled in `vendor/`, MIT
+- [Commissioner](https://github.com/kosbarts/Commissioner) typeface, bundled in `fonts/`, SIL Open Font License 1.1
 
-License texts and attribution are included in [`licenses/`](licenses/) and [`vendor/`](vendor/). Slate's original source code is licensed under the [MIT License](LICENSE).
+License texts and attribution are included in [`licenses/`](licenses/), [`vendor/`](vendor/) and [`fonts/`](fonts/). Slate's original source code is licensed under the [MIT License](LICENSE).
