@@ -1,22 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readdirSync,readFileSync} from 'node:fs';
+import {readFileSync} from 'node:fs';
 
-const read=locale=>JSON.parse(readFileSync(new URL(`./_locales/${locale}/messages.json`,import.meta.url),'utf8'));
-const english=read('en');
-const tokens=text=>(text.match(/\$[A-Z]+\$/g)??[]).sort();
-const locales=readdirSync(new URL('./_locales/',import.meta.url)).filter(locale=>locale!=='en');
+const read=file=>readFileSync(new URL(`./${file}`,import.meta.url),'utf8');
+const english=JSON.parse(read('_locales/en/messages.json'));
+const keys=Object.keys(english);
+const html=read('options.html'),manifest=read('manifest.json');
+const scripts=['options.js','background.js','sources.js','i18n.js'].map(read).join('\n');
 
-test('every locale translates every English message', ()=>{
- assert(locales.length>1);
- for(const locale of locales){
-  const messages=read(locale);
-  assert.deepEqual(Object.keys(messages),Object.keys(english),locale);
-  for(const [key,value] of Object.entries(english)){
-   assert.equal(typeof messages[key].message,'string',`${locale}.${key}`);
-   assert(messages[key].message.trim(),`${locale}.${key} is empty`);
-   assert.deepEqual(messages[key].placeholders,value.placeholders,`${locale}.${key} placeholders`);
-   assert.deepEqual(tokens(messages[key].message),tokens(value.message),`${locale}.${key} tokens`);
-  }
+test('every English message is complete', ()=>{
+ for(const [key,value] of Object.entries(english)){
+  assert(value.message.trim(),`${key} is empty`);
+  const tokens=(value.message.match(/\$[A-Z]+\$/g)??[]).map(token=>token.slice(1,-1).toLowerCase());
+  assert.deepEqual(tokens.sort(),Object.keys(value.placeholders??{}).sort(),`${key} placeholders`);
  }
+});
+
+test('every message key that is used exists, and every key is used', ()=>{
+ const used=new Set([
+  ...[...html.matchAll(/data-i18n(?:-[a-z-]+)?="([^"]+)"/g)].map(match=>match[1]),
+  ...[...manifest.matchAll(/__MSG_(\w+)__/g)].map(match=>match[1]),
+ ]);
+ // Keys appear in scripts as string literals, also inside ternaries and state objects.
+ for(const [,literal] of scripts.matchAll(/'([A-Za-z0-9]+)'/g))if(keys.includes(literal))used.add(literal);
+ for(const key of used)assert(keys.includes(key),`missing message: ${key}`);
+ assert.deepEqual(keys.filter(key=>!used.has(key)),[],'unused messages');
 });

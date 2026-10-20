@@ -5,7 +5,7 @@
   </a>
 </h1>
 
-Slate is a discreet browser extension for Chromium-based browsers. It checks the current browser profile against curated domain lists and removes matching history entries with one click. Matching cookies can be removed optionally. The interface follows the browser language (26 languages, English fallback) and supports light and dark appearance with a circular theme transition.
+Slate is a discreet browser extension for Chromium-based browsers. It checks the current browser profile against curated domain lists and removes matching history entries with one click. Matching cookies can be removed optionally. The interface is in English and supports light and dark appearance with a circular theme transition.
 
 ![Slate settings](assets/preview.png)
 
@@ -20,7 +20,6 @@ Slate is a discreet browser extension for Chromium-based browsers. It checks the
 - Manual, hourly, six-hourly or daily checks
 - Local processing without analytics
 - The toolbar icon shows the state as a small slate: chalk writing means matches, a tick means clean. No counter badge
-- Localized with the standard `chrome.i18n` / `_locales` format in Arabic, Chinese (Simplified and Traditional), Czech, Danish, Dutch, English, Finnish, French, German, Greek, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Polish, Portuguese (Brazil), Romanian, Russian, Spanish, Swedish, Turkish, Ukrainian and Vietnamese
 
 ## Installation from a GitHub release
 
@@ -38,7 +37,7 @@ Clone this repository, open the browser's extension page, enable Developer mode 
 
 ## Usage
 
-Click the Slate icon to clean matching history entries. Open the icon's context menu and choose **Slate: Settings and status** (German: **Slate: Einstellungen und Status**) to manage scans, lists, cookie cleanup and your own rules.
+Click the Slate icon to clean matching history entries. Open the icon's context menu and choose **Slate: Settings and status** to manage scans, lists, cookie cleanup and your own rules.
 
 Cookie cleanup is disabled by default. Enabling it triggers the browser's permission prompt and may sign you out of matching sites.
 

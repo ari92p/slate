@@ -99,15 +99,6 @@ test('Cookie option off preserves cookies and excludes cookie-only findings',asy
  const enabled=await inspect(api,['example.org'],[],true);
  assert.equal(reads,1);assert.equal(enabled.cookies.length,1);
 });
-test('English and German locale catalogs have identical message keys',async()=>{
- const [english,german]=await Promise.all([
-  readFile(new URL('./_locales/en/messages.json',import.meta.url),'utf8').then(JSON.parse),
-  readFile(new URL('./_locales/de/messages.json',import.meta.url),'utf8').then(JSON.parse)
- ]);
- assert.deepEqual(Object.keys(german).sort(),Object.keys(english).sort());
- for(const [key,value] of Object.entries(english))assert(value.message,`English message missing: ${key}`);
- for(const [key,value] of Object.entries(german))assert(value.message,`German message missing: ${key}`);
-});
 test('Own always-clean rules start empty and lose only the formerly prefilled domains',()=>{
  assert.deepEqual(migrateBlacklist({}),[]);
  assert.deepEqual(migrateBlacklist({blacklist:[...legacyDefaults]}),[]);

@@ -66,6 +66,8 @@ async function icon(state) {
  await chrome.action.setIcon({path:{16:`icons/${state}-16.png`,32:`icons/${state}-32.png`}});
 }
 async function update(clean) {
+ // Lets an open settings page show the running scan or cleanup, whoever started it.
+ await chrome.storage.session.set({activity:{type:clean?'clean':'scan',startedAt:Date.now()}});
  try {
   await chrome.action.setBadgeText({text:''});
   if(clean)await chrome.action.setTitle({title:t('actionCleaning')});
@@ -83,6 +85,8 @@ async function update(clean) {
   await icon('findings');
   await chrome.action.setTitle({title:t('actionOpenSettings')});
   await chrome.storage.local.set({status:{error:'scan',checkedAt:Date.now()}});
+ } finally {
+  await chrome.storage.session.remove('activity');
  }
 }
 chrome.action.onClicked.addListener(()=>{void schedule(true)});

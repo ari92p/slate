@@ -1,10 +1,10 @@
 import {normalize} from './core.js';
 import {sourceDefinitions,sourceOrigin} from './sources.js';
-import {applyTranslations,message as t} from './i18n.js';
+import {applyTranslations,message as t,textLocale} from './i18n.js';
 import {revealTheme} from './vendor/circular-theme-switch/index.js';
 
 const $=id=>document.getElementById(id);
-const locale=chrome.i18n.getUILanguage();
+const locale=textLocale;
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let currentCustomSources=[];
 let currentSourceSettings={};
@@ -71,14 +71,20 @@ function showSlate(state,{wipe=false}={}){
  shownKey=key;
  const stage=$('slateStage');const next=buildState(state);
  const current=[...stage.querySelectorAll('.state:not(.sizer)')];
- if(!wipe||reducedMotion.matches||!current.length){for(const element of current)element.remove();stage.append(next);return Promise.resolve()}
+ // Hidden tabs pause animations, so they switch without wiping.
+ if(!wipe||reducedMotion.matches||document.hidden||!current.length){for(const element of current)element.remove();$('slateWet').className='wet';stage.append(next);return Promise.resolve()}
  const wet=$('slateWet');
  for(const element of current.slice(0,-1))element.remove();
  const old=current.at(-1);
  return new Promise(resolve=>{
   old.classList.add('leaving');next.classList.add('arriving');stage.append(next);wet.className='wet on';
-  old.addEventListener('animationend',()=>{old.remove();wet.className='wet on drying'},{once:true});
-  next.addEventListener('animationend',()=>{next.classList.remove('arriving');setTimeout(()=>{if(wet.classList.contains('drying'))wet.className='wet'},1800);resolve()},{once:true});
+  const erased=()=>{if(!old.isConnected)return;old.remove();wet.className='wet on drying'};
+  let done=false;
+  const written=()=>{if(done)return;done=true;erased();next.classList.remove('arriving');setTimeout(()=>{if(wet.classList.contains('drying'))wet.className='wet'},1800);resolve()};
+  old.addEventListener('animationend',erased,{once:true});
+  next.addEventListener('animationend',written,{once:true});
+  // Fallback if the tab is hidden mid-wipe and the animations never finish.
+  setTimeout(written,1600);
  });
 }
 function setBusy(value){busy=value;$('scan').disabled=value;for(const button of $('slateStage').querySelectorAll('.state:not(.sizer) .chalk-button'))button.disabled=value}
@@ -196,5 +202,22 @@ $('restoreSources').onclick=async()=>{removedBuiltInSources=[];await chrome.stor
 $('refresh').onclick=async()=>{$('refresh').disabled=true;$('listMessage').textContent=t('updateRunning');try{const result=await chrome.runtime.sendMessage({type:'refresh'});await status();$('listMessage').textContent=t(result?.ok?'updateSuccess':'updateFailed')}catch{$('listMessage').textContent=t('updateFailed')}finally{$('refresh').disabled=false}};
 
 $('scan').onclick=scan;
-chrome.storage.onChanged.addListener((changes,area)=>{if(area==='local'&&(changes.status||changes.sourceMeta||changes.sourceSettings||changes.customSources||changes.removedBuiltInSources))void status()});
+// Scans and cleanups started elsewhere (toolbar icon, schedule) appear exactly like the page's own buttons.
+let external=null;
+async function mirrorActivity(activity){
+ if(activity){
+  if(busy)return;
+  setBusy(true);
+  external=showSlate(activity.type==='clean'?working.cleaning:working.checking,{wipe:activity.type==='clean'});
+ }else if(external){
+  // Let the wipe finish even when the cleanup was faster than the animation.
+  const shown=external;external=null;await shown;
+  setBusy(false);await status();
+ }
+}
+chrome.storage.onChanged.addListener((changes,area)=>{
+ if(area==='session'&&changes.activity)mirrorActivity(changes.activity.newValue);
+ if(area==='local'&&(changes.status||changes.sourceMeta||changes.sourceSettings||changes.customSources||changes.removedBuiltInSources))void status();
+});
 await status();
+mirrorActivity((await chrome.storage.session.get('activity')).activity);

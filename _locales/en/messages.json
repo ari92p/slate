@@ -1,4 +1,5 @@
 {
+  "textLocale":{"message":"en"},
   "extensionName":{"message":"Slate"},
   "extensionDescription":{"message":"Private browser history cleanup with customizable domain lists."},
   "actionTitle":{"message":"Slate"},
@@ -87,7 +88,7 @@
   "infoTitleHistory":{"message":"History and cookies"},
   "infoHistory":{"message":"The full available history of the current browser profile is searched for these domains. All visits to matching URLs are removed. Matching domain cookies are removed only when the cookie option is enabled, including cookies without a history entry."},
   "infoTitleLimits":{"message":"Detection limits"},
-  "infoLimits":{"message":"Blocklists are not complete and can contain false classifications. Mixed platforms such as Reddit are deliberately not removed wholesale. Unknown domains, search queries, third-party trackers, cache, other website data, downloads and open tabs are not cleaned. Open pages can set cookies again. Green means no list matches, not guaranteed absence of traces."},
+  "infoLimits":{"message":"Blocklists are not complete and can contain false classifications. Mixed platforms such as Reddit are deliberately not removed wholesale. Unknown domains, search queries, third-party trackers, cache, other website data, downloads and open tabs are not cleaned. Open pages can set cookies again. A clean result means no list matches, not a guaranteed absence of traces."},
   "infoTitlePrivacy":{"message":"Privacy and effects"},
   "infoPrivacy":{"message":"Public and user-added lists are downloaded from their respective addresses; their operators receive your IP address. History, cookies and personal rules are not transmitted. Optional cookie removal may sign you out of affected sites. Deletion cannot be undone."},
   "contextSettings":{"message":"Slate: Settings and status"},
