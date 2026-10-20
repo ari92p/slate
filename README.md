@@ -62,8 +62,8 @@ The toolbar and extension icons in `icons/` are generated from `scripts/build-ic
 
 ## Third-party lists, code and licenses
 
-- [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists), `nsfw-onlydomains.txt`, GPL-3.0
-- [Block List Project](https://github.com/blocklistproject/Lists), `porn.txt`, Unlicense; the delivered list header also mentions MIT
+- [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists), GPL-3.0
+- [Block List Project](https://github.com/blocklistproject/Lists), Unlicense; the delivered list header also mentions MIT
 - [Circular Theme Switch](https://github.com/ari92p/circular-theme-switch) v1.1.3, bundled in `vendor/`, MIT
 - [Commissioner](https://github.com/kosbarts/Commissioner) typeface, bundled in `fonts/`, SIL Open Font License 1.1
 
