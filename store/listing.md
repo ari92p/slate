@@ -15,22 +15,29 @@ Everything needed to submit Slate in the [Chrome Web Store Developer Dashboard](
 **Description:**
 
 ```
-Slate removes visits to adult websites from your browser history with one click, quietly and locally.
+Slate removes only the sites you choose from your browser history, with one click, quietly and locally.
 
-It checks the history of the current browser profile against two public blocklists, HaGeZi and Block List Project, plus any rules you add. The toolbar icon shows a small slate: chalk writing means there is something to clean, a tick means your history is clean. Click the icon, and Slate deletes every matching history entry.
+Browsers let you keep your whole history or wipe it. Slate is the part in between: you decide which websites should not stay in your history, and Slate cleans them while the rest stays untouched.
+
+You decide what gets cleaned
+• Your own block list: domains to always clean
+• Your own allow list: domains to never clean, which always takes priority
+• Filter lists: add any HTTPS filter list, the same kind used by DNS and content blockers, and Slate keeps it updated
+• Ready-made start: two public adult-content lists, HaGeZi and Block List Project, are included and can be switched off or removed
+
+The toolbar icon shows a small slate: chalk writing means there is something to clean, a tick means your history is clean. Click the icon, and Slate deletes every matching history entry.
 
 What Slate does
 • Cleans matching history entries with one click on the toolbar icon
 • Recognizes new matching visits as they happen, including pages that redirect elsewhere
 • Removes the address bar suggestions the browser learned for the start pages of cleaned sites
 • Optionally deletes matching cookies too (off by default; the permission is only requested when you turn it on)
-• Lets you add your own HTTPS filter lists, and your own domains to always or never clean
 • Checks at browser start, or hourly, every 6 or 12 hours, or daily
 • Light and dark appearance
 
 Private by design
 • Everything happens inside your browser. No account, no server, no analytics, no tracking.
-• Slate never sends your history, cookies or rules anywhere. It only downloads the public lists.
+• Slate never sends your history, cookies or rules anywhere. It only downloads the filter lists you use.
 • Open source: https://github.com/ari92p/slate
 
 Limits
@@ -56,8 +63,10 @@ Lists are never complete and can contain mistakes. Slate does not clear search q
 **Single purpose:**
 
 ```
-Slate removes browsing-history entries, and optionally cookies, of websites listed on public adult-content blocklists from the current browser profile.
+Slate removes browsing-history entries, and optionally cookies, of websites the user selects from the current browser profile. Websites are selected through the user's own block and allow lists and through filter lists; two public adult-content blocklists are included by default.
 ```
+
+Changing this text on an already published item may trigger a new review.
 
 **Permission justifications:**
 

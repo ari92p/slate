@@ -1,8 +1,8 @@
 # Privacy policy
 
-_Last updated: October 20, 2026_
+_Last updated: October 21, 2026_
 
-Slate is a browser extension that removes history entries of domains found on public adult-content blocklists. Everything happens inside your browser. Slate has no server, no account, no analytics and no tracking.
+Slate is a browser extension that removes history entries of the domains you select: through your own block and allow lists and through filter lists. Two public adult-content blocklists are included by default. Everything happens inside your browser. Slate has no server, no account, no analytics and no tracking.
 
 ## What Slate reads
 

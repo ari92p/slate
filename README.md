@@ -5,18 +5,18 @@
   </a>
 </h1>
 
-Slate is a discreet extension for Chromium-based browsers such as Chrome and Brave. It checks the history of the current browser profile against public adult-content domain lists and removes matching entries with one click. Matching cookies can be removed too, if you turn that on. Everything runs locally in your browser: no account, no server, no analytics.
+Slate is a discreet extension for Chromium-based browsers such as Chrome and Brave. Browsers let you keep your whole history or wipe it; Slate removes only the sites you choose. You decide what gets cleaned with your own block and allow lists and with filter lists, and Slate removes matching history entries with one click. Two public adult-content lists are included as a ready-made start. Matching cookies can be removed too, if you turn that on. Everything runs locally in your browser: no account, no server, no analytics.
 
 ![Slate settings](assets/preview.png)
 
 ## Features
 
+- Your own rules: a block list of domains to always clean, and an allow list of domains to never clean, which takes priority
+- Filter lists: subscribe to any HTTPS filter list, the same kind used by DNS and content blockers, each with its own update status
+- Bundled lists from HaGeZi and Block List Project for adult content, each switchable, removable and restorable
 - One-click cleanup from the toolbar icon; the icon shows the state as a small slate (chalk writing means matches, a tick means clean) without a counter badge
 - Recognizes new matching visits as they happen, including pages that redirect elsewhere
 - Also removes the address bar suggestions the browser learned for the start pages of cleaned sites
-- Bundled lists from HaGeZi and Block List Project, each switchable, removable and restorable
-- Custom HTTPS filter lists with their own update status
-- Your own rules: domains to always clean, and domains to never clean, which take priority
 - Optional cookie cleanup, with permissions requested only when you turn it on
 - Checks at browser start or hourly, every 6 or 12 hours, or daily
 - Light and dark appearance
