@@ -62,6 +62,15 @@ The toolbar and extension icons in `icons/` are generated from `scripts/build-ic
 
 `npm run build` keeps only the current build in `dist/`: the release ZIP `dist/slate-v<version>.zip` (version from `manifest.json`) and the unpacked folder `dist/slate/`. Load `dist/slate/` once with **Load unpacked**; after later builds, click the extension's reload button instead of adding it again.
 
+## Support
+
+If this extension is useful to you, you can buy me a coffee:
+
+<p>
+  <a href="https://ko-fi.com/ari92p"><img alt="Support me on Ko-fi" src="https://ko-fi.com/img/githubbutton_sm.svg" height="36"></a>
+  <a href="https://buymeacoffee.com/ari92p"><img alt="Buy Me a Coffee" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" height="36"></a>
+</p>
+
 ## Third-party lists, code and licenses
 
 - [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists), GPL-3.0
