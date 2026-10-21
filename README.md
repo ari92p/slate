@@ -7,7 +7,7 @@
 
 Slate is a discreet extension for Chromium-based browsers such as Chrome and Brave. Browsers let you keep your whole history or wipe it; Slate removes only the sites you choose. You decide what gets cleaned with your own block and allow lists and with filter lists, and Slate removes matching history entries with one click. Two public curated filter lists are included as a ready-made start. Matching cookies can be removed too, if you turn that on. Everything runs locally in your browser: no account, no server, no analytics.
 
-![Slate settings](assets/preview.png)
+![Slate demo: checking settings, cleaning history and checking again](demo/slate-demo.gif)
 
 ## Features
 
