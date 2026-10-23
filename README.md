@@ -1,5 +1,8 @@
 <h1>
   Slate
+  <a href="https://chromewebstore.google.com/detail/slate/hcgiidknjjdnjcmedheaiokjpcabenmb">
+    <img alt="Chrome Web Store" src="https://img.shields.io/chrome-web-store/v/hcgiidknjjdnjcmedheaiokjpcabenmb?style=for-the-badge&label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white">
+  </a>
   <a href="https://github.com/ari92p/slate/releases/latest">
     <img alt="Latest release" src="https://img.shields.io/github/v/release/ari92p/slate?display_name=tag&style=for-the-badge&label=Download&logo=github">
   </a>
@@ -20,6 +23,10 @@ Slate is a discreet extension for Chromium-based browsers such as Chrome and Bra
 - Optional cookie cleanup, with permissions requested only when you turn it on
 - Checks at browser start or hourly, every 6 or 12 hours, or daily
 - Light and dark appearance
+
+## Installation from the Chrome Web Store
+
+Install Slate from its [Chrome Web Store page](https://chromewebstore.google.com/detail/slate/hcgiidknjjdnjcmedheaiokjpcabenmb). This works in Chrome, Brave and other Chromium-based browsers, and updates arrive automatically.
 
 ## Installation from a GitHub release
 
