@@ -14,7 +14,7 @@ while the header of porn.txt states MIT (checked 2026-10-20). Both allow
 redistribution. Slate keeps the list and its header unmodified in
 data/blocklistproject.txt, which also satisfies the MIT notice requirement.
 
-Retrieved 2026-10-18. Runtime updates download the same public text sources.
+Retrieved 2026-11-21. Runtime updates download the same public text sources.
 
 Third-party code
 

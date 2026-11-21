@@ -1,5 +1,5 @@
 export const sources=[
- {id:'hagezi',name:'HaGeZi',bundledCount:92403,url:'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/nsfw-onlydomains.txt',builtIn:true,minimumCount:1000},
+ {id:'hagezi',name:'HaGeZi',bundledCount:87988,url:'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/nsfw-onlydomains.txt',builtIn:true,minimumCount:1000},
  {id:'blocklistproject',name:'Block List Project',bundledCount:953197,url:'https://raw.githubusercontent.com/blocklistproject/Lists/main/porn.txt',builtIn:true,minimumCount:1000}
 ];
 
@@ -49,17 +49,17 @@ export function parseList(text,{minimumCount=1000}={}) {
   const d=host.toLowerCase().replace(/\.$/,'');
   if(d.length<=253 && d.includes('.') && !/^\d+(\.\d+){3}$/.test(d) && d.split('.').every(l=>/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(l))) domains.add(d);else invalid++;
  }
- if(domains.size<minimumCount || domains.size>2000000 || invalid>Math.max(100,domains.size*.01)) throw Error('Ungültige oder unvollständige Liste');
+ if(domains.size<minimumCount || domains.size>2000000 || invalid>Math.max(100,domains.size*.01)) throw Error('Invalid or incomplete list');
  return [...domains];
 }
 
 function validateChange(domains, baseline) {
  if(!baseline?.length)return;
- if(domains.length<baseline.length*.75||domains.length>baseline.length*1.25)throw Error('Auffällige Größenänderung');
+ if(domains.length<baseline.length*.75||domains.length>baseline.length*1.25)throw Error('Unusual change in list size');
  const next=new Set(domains);
  let retained=0;
  for(const domain of baseline)if(next.has(domain))retained++;
- if(retained/baseline.length<.8)throw Error('Auffälliger Inhaltswechsel');
+ if(retained/baseline.length<.8)throw Error('Unusual change in list content');
 }
 
 export async function refreshSources(api,fetcher=fetch,baselines={},definitions=sources,sourceSettings={}) {
@@ -72,8 +72,8 @@ export async function refreshSources(api,fetcher=fetch,baselines={},definitions=
   }
   try {
    const response=await fetcher(src.url,{cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer',signal:AbortSignal.timeout(25000)});
-   if(!response.ok)throw Error('Download fehlgeschlagen');
-   const text=await response.text();if(text.length>80000000)throw Error('Liste zu groß');
+   if(!response.ok)throw Error('Download failed');
+   const text=await response.text();if(text.length>80000000)throw Error('List too large');
    const domains=parseList(text,{minimumCount:src.minimumCount??1000});
    validateChange(domains,old?.domains??baselines[src.id]);
    next[src.id]={domains,updatedAt:Date.now(),checkedAt:Date.now(),error:null};

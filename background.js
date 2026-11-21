@@ -103,6 +103,7 @@ async function update(clean) {
   await chrome.action.setTitle({title});
   await chrome.storage.local.set({status:{domains:count,history:found.history.length,cookies:found.cookies.length,failed,checkedAt:Date.now(),...(result?{lastClean:result}:{})}});
  } catch(e) {
+  console.error('Slate scan failed',e);
   await icon('findings');
   await chrome.action.setTitle({title:t('actionOpenSettings')});
   await chrome.storage.local.set({status:{error:'scan',checkedAt:Date.now()}});

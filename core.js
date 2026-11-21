@@ -1,5 +1,5 @@
 // Domains that versions up to 0.8.0 prefilled into the own "always clean" rules. The bundled lists cover all of them.
-export const legacyDefaults = ['pornhub.com','xvideos.com','xnxx.com','xhamster.com','youporn.com','redtube.com','tube8.com','spankbang.com','eporner.com','hqporner.com','beeg.com','chaturbate.com','stripchat.com',' livejasmin.com'.trim(),'cam4.com','bongacams.com','myfreecams.com','rule34.xxx','rule34.paheal.net','e-hentai.org','exhentai.org','nhentai.net','hanime.tv'];
+export const legacyDefaults = ['pornhub.com','xvideos.com','xnxx.com','xhamster.com','youporn.com','redtube.com','tube8.com','spankbang.com','eporner.com','hqporner.com','beeg.com','chaturbate.com','stripchat.com','livejasmin.com','cam4.com','bongacams.com','myfreecams.com','rule34.xxx','rule34.paheal.net','e-hentai.org','exhentai.org','nhentai.net','hanime.tv'];
 // One-time migration: drop the prefilled domains from stored rules, keep everything the user added.
 export function migrateBlacklist({blacklist,domains,blacklistDefaultsRemoved}) {
  if(blacklistDefaultsRemoved)return null;
@@ -10,7 +10,7 @@ export function normalize(value) {
  const raw=value.trim().toLowerCase();
  if (!raw || raw.startsWith('#')) return null;
  const u=new URL(raw.includes('://')?raw:'https://'+raw);
- if (!['http:','https:'].includes(u.protocol) || u.username || u.password || u.port || (u.pathname!=='/' && u.pathname!=='') || u.search || u.hash || !u.hostname.includes('.') || !/^[a-z0-9.-]+$/.test(u.hostname)) throw Error('Ungültige Domain: '+value);
+ if (!['http:','https:'].includes(u.protocol) || u.username || u.password || u.port || (u.pathname!=='/' && u.pathname!=='') || u.search || u.hash || !u.hostname.includes('.') || !/^[a-z0-9.-]+$/.test(u.hostname)) throw Error('Invalid domain: '+value);
  return u.hostname.replace(/\.$/,'');
 }
 export function matches(host, domains) {
@@ -29,8 +29,8 @@ export function matchURL(url, domains) { try { const u=new URL(url); return ['ht
 export async function inspect(api, domains, whitelist=[], includeCookies=true, pending=[]) {
  const accepts=policy(domains,whitelist);
  // Increase the cap until every distinct URL fits; never silently use the 24-hour default.
- let cap=10000, history;
- do { history=await api.history.search({text:'',startTime:0,maxResults:cap}); if(history.length<cap) break; if(cap>=10000000) throw Error('Verlauf zu groß für vollständige Prüfung'); cap*=10; } while(true);
+ let cap=100000, history;
+ do { history=await api.history.search({text:'',startTime:0,maxResults:cap}); if(history.length<cap) break; if(cap>=10000000) throw Error('History too large for a complete check'); cap*=10; } while(true);
  const cookies=includeCookies?await api.cookies.getAll({}):[];
  const matching=x=>{try{const u=new URL(x.url);return ['http:','https:'].includes(u.protocol)&&accepts(u.hostname)}catch{return false}};
  const found=history.filter(matching),listed=new Set(found.map(x=>x.url));
